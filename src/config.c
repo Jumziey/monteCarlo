@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <sys/stat.h>
 
 #include "ising.h"
@@ -12,6 +13,7 @@ int write_config(Par *par, int *spin, char *fname)
 {
   int L2 = par->L * par->L, fdesc;
   char filename[FNAMESIZE + 5] = "conf/";
+  size_t nbytes;
 
   strcat(filename, fname);
   fdesc = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -20,7 +22,7 @@ int write_config(Par *par, int *spin, char *fname)
     return 0;
   }
  
-  write(fdesc, spin, L2 * sizeof(int));
+  nbytes = write(fdesc, spin, L2 * sizeof(int));
   close(fdesc);
 
   return 1;
@@ -42,6 +44,7 @@ int read_config(Par *par, int *spin, char *fname)
 {
   int L2 = par->L * par->L, bytes, st, fdesc;
   char filename[FNAMESIZE + 5] = "conf/";
+  size_t nbytes;
 
   strcat(filename, fname);
   bytes = L2 * sizeof(int);
@@ -57,7 +60,7 @@ int read_config(Par *par, int *spin, char *fname)
 
   // Check file size
   if (bytes == filebytes(fdesc)) {
-    read(fdesc, spin, bytes);
+    nbytes = read(fdesc, spin, bytes);
     printf(".\n");
     st = 1;
   }

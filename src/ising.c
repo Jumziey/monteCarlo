@@ -16,39 +16,6 @@
 #define LEFT(ind,L)  (ind == 0) 							? (L*L-1) :  (ind-1)
 
 char fname[FNAMESIZE];	
-double eDiffValues[5];
-
-void init_tables(Par *par)
-{
-	eDiffValues[0] = 1;
-	eDiffValues[1] = exp(-4/par->t);
-	eDiffValues[2] = exp(-8/par->t);
-	eDiffValues[3] = exp(4/par->t);
-	eDiffValues[4] = exp(8/par->t);
-}
-
-double energyDiff(int eDiff) {
-	switch(eDiff) {
-		case 0:
-			return eDiffValues[0];
-			break;
-		case 4:
-			return eDiffValues[1];
-			break;
-		case 8:
-			return eDiffValues[2];
-			break;
-		case -4:
-			return eDiffValues[3];
-			break;
-		case -8:
-			return eDiffValues[4];
-			break;
-		default:
-			fprintf(stderr,"Something wrong with the eDiff\n");
-			exit(2);
-	}
-}
 
 double measure(Par *par, double *v, int *spin)
 {
@@ -73,7 +40,7 @@ double measure(Par *par, double *v, int *spin)
 			e -= spin[par->L*par->L+j]*spin[ABOVE(par->L*par->L+j,par->L)];
 	}
 	
-	//Magnisation
+	//Magnetisation
 	for(i=0; i<(par->L*par->L); i++)
 		m += spin[i];
 	
@@ -92,7 +59,9 @@ void result(Par *par, double* v, int divide, int final)
 		printf(" %8f %8f %8f \n", v[0]/divide,1.123, v[1]/divide);
 }
 
-//Here we actually put j=boltzmann
+/*Here we actually put j=boltzmann because of reasons that 
+ * For reasons that even escapes our awesome instructor
+ */
 double spinEnergy(Par *par, int ind, int *spin) {
 	double e;
 	e = 0.0;
@@ -104,46 +73,6 @@ double spinEnergy(Par *par, int ind, int *spin) {
 	
 	return e;
 }
-
-#ifndef CLU
-int update(Par *par, int *spin)
-{
-	int i,j,ind, eDiff;
-	double curEnergy, newEnergy,prob,b;
-	int accept=0;
-	
-	for(i=0; i<par->L; i++) {
-		for(j=0; j<par->L; j++) {
-			ind = i*par->L + j;
-		
-			curEnergy = spinEnergy(par,ind,spin);
-
-			spin[ind] = spin[ind]*(-1);
-			newEnergy = spinEnergy(par,ind,spin);
-
-			eDiff = newEnergy-curEnergy;
-			
-			prob = fmin(1.0, energyDiff(eDiff));
-			double test = dran();
-			if(test > prob) 
-				spin[ind] = spin[ind]*(-1);
-			 else 
-				accept++;
-			
-		}
-	}
-  return accept;
-}
-#endif
-
-
-#ifdef CLU
-
-// Fix this (Cluster update). Write the cluster update function.
-
-#endif
-
-
 
 
 
@@ -167,8 +96,7 @@ void mc(Par *par, int *spin)
 
   printf("\n====    %d x %d     T = %g    ====\n", par->L, par->L, par->t);
   printf("\nntherm  nblock   nsamp   seed\n");
-  printf(" %5d   %5d   %5d   %d\n", ntherm, par->nblock, par->nsamp, par->seed);
-
+  printf(" %5d  %5d   %5d   %d\n", ntherm, par->nblock, par->nsamp, par->seed);
   
   printf("\n energy      cv        magn     \n");
 
@@ -220,9 +148,17 @@ int read_args(Par *par, char *arg)
   static int *spin = NULL;
   char *s;
 
-  if (!strcmp(arg, "run"))
-    return initialize_mc(par, spin);
-
+  if (!strcmp(arg, "run")) {
+    if(initialize_mc(par, spin)) {
+    	/* We free spin only to get 
+    	 * a better result from valgrind ;)
+    	 */
+    	free(spin);
+    	return 1;
+    } else {
+    	return 0;
+    }
+	}
   s = strchr(arg, '=');
 
   if (!s) {
@@ -283,7 +219,7 @@ int read_args(Par *par, char *arg)
 }
 
 
-
+int
 main(int argc, char *argv[])
 {
   int i, iarg;
@@ -293,6 +229,7 @@ main(int argc, char *argv[])
   par->t = 2.26;
   par->nblock = 1;
   par->nsamp = 10000;
+  par->seed = 0;
 
   if (argc == 1) {
     printf("Usage: %s L=16 T=2.26\n", argv[0]);
