@@ -9,13 +9,40 @@
 
 #include "ising.h"
 
-//Defined for the spin matrix, using periodic boundaries
-#define ABOVE(ind,L) ((ind-(L-1)) <= 0) 			? (L*L-1+(ind-(L-1))) : (ind-L)
-#define BELOW(ind,L) ((ind+(L-1)) >= (L*L-1)) ? ((ind+(L-1))-(L*L-1)) : (ind+L)
-#define RIGHT(ind,L) (ind == L*L-1) 					? 0 : (ind+1)
-#define LEFT(ind,L)  (ind == 0) 							? (L*L-1) :  (ind-1)
-
 char fname[FNAMESIZE];	
+double eDiffValues[5];
+
+void init_tables(Par *par)
+{
+	eDiffValues[0] = 1;
+	eDiffValues[1] = exp(-4/par->t);
+	eDiffValues[2] = exp(-8/par->t);
+	eDiffValues[3] = exp(4/par->t);
+	eDiffValues[4] = exp(8/par->t);
+}
+
+double energyDiff(int eDiff) {
+	switch(eDiff) {
+		case 0:
+			return eDiffValues[0];
+			break;
+		case 4:
+			return eDiffValues[1];
+			break;
+		case 8:
+			return eDiffValues[2];
+			break;
+		case -4:
+			return eDiffValues[3];
+			break;
+		case -8:
+			return eDiffValues[4];
+			break;
+		default:
+			fprintf(stderr,"Something wrong with the eDiff\n");
+			exit(2);
+	}
+}
 
 double measure(Par *par, double *v, int *spin)
 {
@@ -74,8 +101,6 @@ double spinEnergy(Par *par, int ind, int *spin) {
 	return e;
 }
 
-
-
 void mc(Par *par, int *spin)
 {
   int i, iblock, isamp, istep, ntherm = par->ntherm;
@@ -117,8 +142,6 @@ void mc(Par *par, int *spin)
   acc = accept * 100.0 / (L2 * par->nblock * par->nsamp);
   printf("\nAcceptance: %5.2f\n", acc);
 }
-
-
 
 int 
 initialize_mc(Par *par, int *spin) {

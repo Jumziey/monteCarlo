@@ -4,9 +4,9 @@ CFLAGS  = -g -O4
 LOADLIBES = -lm
 VPATH = ../src
 
-INCLUDES = ran.h
+INCLUDES = ran.h ising.h
 
-OBJS = ising.o ran.o config.o
+OBJS = ising.o ran.o config.o cluster.o
 
 ising: ${OBJS}
 

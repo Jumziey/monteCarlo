@@ -1,45 +1,10 @@
 #include <math.h>
-#include <stdio.h>
 #include "ising.h"
 #include "ran.h"
 
-
-double eDiffValues[5];
-
-void init_tables(Par *par)
-{
-	eDiffValues[0] = 1;
-	eDiffValues[1] = exp(-4/par->t);
-	eDiffValues[2] = exp(-8/par->t);
-	eDiffValues[3] = exp(4/par->t);
-	eDiffValues[4] = exp(8/par->t);
-}
-
-
-double energyDiff(int eDiff) {
-	switch(eDiff) {
-		case 0:
-			return eDiffValues[0];
-			break;
-		case 4:
-			return eDiffValues[1];
-			break;
-		case 8:
-			return eDiffValues[2];
-			break;
-		case -4:
-			return eDiffValues[3];
-			break;
-		case -8:
-			return eDiffValues[4];
-			break;
-		default:
-			fprintf(stderr,"Something wrong with the eDiff\n");
-			exit(2);
-	}
-}
-
-
+/* An update function written especially for the
+ * metro update scheme
+ */
 int update(Par *par, int *spin)
 {
 	int i,j,ind, eDiff;

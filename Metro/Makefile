@@ -3,7 +3,7 @@ CFLAGS  = -g -O4 --std=c99
 LOADLIBES = -lm
 VPATH = ../src
 
-INCLUDES = ran.h update.h
+INCLUDES = ran.h ising.h
 
 OBJS = ising.o config.o ran.o metro.o
 
