@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stddef.h>
 
+
 int maxSize, curSize, in, out;
 int *queue;
 
@@ -28,7 +29,6 @@ queuePut(int val) {
 		fprintf(stderr, "The queue got maxed out\n");
 		exit(20);
 	}
-	printf("in: %d\n", in);
 	queue[in] = val;
 	curSize++;
 	in++;

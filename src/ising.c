@@ -74,16 +74,28 @@ double measure(Par *par, double *v, int *spin)
 	//Want the values per spin state
 	v[0] += e/(par->L*par->L);
 	v[1] += fabs(m)/(par->L*par->L);
-	
+	v[2] += e;
+	v[3] += pow(e,2);
 }
 
 void result(Par *par, double* v, int divide, int final)
 {
+	double ePerSpin, mPerSpin, Eavg, E2avg;
+	double cSys, cPerSpin;
+
+	ePerSpin = v[0]/divide;
+	mPerSpin = v[1]/divide;
+	Eavg = v[2]/divide;
+	E2avg = v[3]/divide;
+	
+	cSys = 1/pow(par->t,2) * ( E2avg - pow(Eavg,2));
+	cPerSpin = cSys/pow(par->L,2); 
+
   if (final) {
     printf("  --------  --------  --------\n");
-		printf(" %8f  %8f  %8f \n", v[0]/divide, 1.123, v[1]/divide);
+		printf(" %8f  %8f  %8f \n", v[0]/divide, cPerSpin, v[1]/divide);
 	} else
-		printf(" %8f %8f %8f \n", v[0]/divide,1.123, v[1]/divide);
+		printf(" %8f %8f %8f \n", v[0]/divide, cPerSpin, v[1]/divide);
 }
 
 /*Here we actually put j=boltzmann because of reasons that 
@@ -101,11 +113,59 @@ double spinEnergy(Par *par, int ind, int *spin) {
 	return e;
 }
 
+#define MAXRUNS 10
+#define PARVALS 6
+void saveData(Par *par, double* v,int divide)
+{
+	int i;
+	char sysVal[PARVALS][MAXRUNS];
+	char *sysValNames[] = {"L","t","ntherm","nblock","nsamp","seed"};
+	char *filename;
+	FILE* fp;
+	
+	filename = calloc(22+MAXRUNS*PARVALS + 5,sizeof(char));
+	
+	sprintf(sysVal[0], "%d", par->L);
+	sprintf(sysVal[1], "%g", par->t);
+	sprintf(sysVal[2], "%d", par->ntherm);
+	sprintf(sysVal[3], "%d", par->nblock);
+	sprintf(sysVal[4], "%d", par->nsamp);
+	sprintf(sysVal[5], "%d", par->seed);
+	
+	char strtmp[10+MAXRUNS];
+	strcpy(filename,"data/");
+	for(i=0; i<PARVALS; i++) {
+		strcpy(strtmp,sysValNames[i]);
+		strcat(strtmp,sysVal[i]);
+		filename = strcat(filename,strtmp);
+	}
+	printf("Finalized data saved to: %s\n", filename);
+	
+	double ePerSpin, mPerSpin, Eavg, E2avg;
+	double cSys, cPerSpin;
+
+	ePerSpin = v[0]/divide;
+	mPerSpin = v[1]/divide;
+	Eavg = v[2]/divide;
+	E2avg = v[3]/divide;
+	
+	cSys = 1/pow(par->t,2) * ( E2avg - pow(Eavg,2));
+	cPerSpin = cSys/pow(par->L,2);
+	
+	fp = fopen(filename, "w");
+	fprintf(fp,"%8f %8f %8f\n",v[0]/divide, cPerSpin, v[1]/divide);
+	fclose(fp);
+	
+}
+	
+	
+ 
+
 void mc(Par *par, int *spin)
 {
   int i, iblock, isamp, istep, ntherm = par->ntherm;
-  double t = par->t, acc, accept = 0.0, L2 = par->L * par->L;
-  double v[2] = {0.0, 0.0};
+  double t = par->t, acc, accept = 0.0, L2 = par->L*par->L;
+  double v[4] = {0.0, 0.0, 0.0, 0.0};
 
 
   //Read in the configuration for the present parameters if already present.
@@ -139,8 +199,10 @@ void mc(Par *par, int *spin)
   }
   
 	result(par,v,par->nblock*par->nsamp,1);
-  acc = accept * 100.0 / (L2 * par->nblock * par->nsamp);
+  acc = accept * 100.0 / (L2 * (par->nblock) * (par->nsamp));
   printf("\nAcceptance: %5.2f\n", acc);
+
+	saveData(par,v,par->nblock*par->nsamp);
 }
 
 int 
