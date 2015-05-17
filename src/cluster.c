@@ -8,18 +8,18 @@ int update(Par* par, int* spin) {
 	int i,j;
 	int state, size,acc,pos;
 	double prob;
-
+	
 	acc = 0;
 	size = par->L*par->L;
 	//I'll be suprised if the queue gets bigger
 	queueInit(size);
 	
-	pos = ceil(size*dran());
+	pos = iran()%size;
 	state = spin[pos];
 	spin[pos] *= -1;
 	queuePut(pos);
 	
-	prob = 1-exp(-2/par->t);
+	prob = 1-exp((double)-2/par->t);	
 	while((i = queueGet())!= 0) {
 		if(spin[ABOVE(i,par->L)] == state)
 			if(dran()<=prob) {
