@@ -7,7 +7,7 @@ nblock=64
 
 for T in "${temp[@]}"
 do
-	commando="./ising L=$L ntherm=1000 nblock=$nblock T=$T run"
+	commando="./ising L=$L nblock=$nblock T=$T run"
 	echo $commando
 	eval $commando
 done
