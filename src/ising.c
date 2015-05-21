@@ -74,8 +74,8 @@ double measure(Par *par, double *v, int *spin)
 	//Want the values per spin state
 	v[0] += e/(par->L*par->L);
 	v[1] += fabs(m)/(par->L*par->L);
-	v[2] += e;
-	v[3] += pow(e,2);
+	v[2] += e/(par->L*par->L);
+	v[3] += pow(e,2)/(par->L*par->L);
 }
 
 void result(Par *par, double* v, int divide, int final)
@@ -93,9 +93,9 @@ void result(Par *par, double* v, int divide, int final)
 
   if (final) {
     printf("  --------  --------  --------\n");
-		printf(" %8f  %8f  %8f \n", v[0]/divide, cPerSpin, v[1]/divide);
+		printf(" %8f  %8f  %8f \n", ePerSpin, cPerSpin, mPerSpin);
 	} else
-		printf(" %8f %8f %8f \n", v[0]/divide, cPerSpin, v[1]/divide);
+		printf(" %8f %8f %8f \n", ePerSpin, cPerSpin, mPerSpin);
 }
 
 /*Here we actually put j=boltzmann because of reasons that 
