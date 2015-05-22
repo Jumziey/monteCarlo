@@ -8,7 +8,7 @@
 
 #include "ran.h"
 #include "ising.h"
-
+tc
 char fname[FNAMESIZE];	
 double eDiffValues[5];
 

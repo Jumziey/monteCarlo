@@ -13,3 +13,6 @@ ising: ${OBJS}
 summary: summary.o
 
 ${OBJS}: ${INCLUDES} Makefile
+
+clean:
+	rm *.o ising
