@@ -79,8 +79,8 @@ double measure(Par *par, double *v, int *spin)
 
 void result(Par *par, double* v, int divide, int final)
 {
-	double eSys, mSys, cSys, e2Sys;
-	double sysSize;
+	double eSys, mSys, e2Sys;
+	double cPerSpin, sysSize;
 
 	sysSize = par->L*par->L;
 	eSys = v[0]/divide;
