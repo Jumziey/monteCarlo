@@ -19,7 +19,7 @@ data256 = readData('cluster', sizes, temps, 1000, nblock, nsamp, seed)
 
 sizes = [1024];
 temps1024 = [2.265 2.266 2.267 2.268 2.269];
-nblock=32;
+nblock=1;
 nsamp=1000;
 seed=0;
 

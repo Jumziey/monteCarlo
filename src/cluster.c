@@ -6,7 +6,7 @@
 #include "ran.h"
 
 int update(Par* par, int* spin) {
-	int i,j;
+
 	int state, size,acc,pos;
 	double prob;
 	
@@ -20,32 +20,29 @@ int update(Par* par, int* spin) {
 	spin[pos] *= -1;
 	queuePut(pos);
 	
-	prob = 1.0-exp(-2/par->t);	
-	while((i = queueGet())!= 0) {
-		if(spin[ABOVE(i,par->L)] == state)
-			if(dran()<prob) {
-				spin[ABOVE(i,par->L)] *= -1;
-				queuePut(ABOVE(i,par->L));
-				acc++;
-			}
-		if(spin[BELOW(i,par->L)] == state)
-			if(dran()<prob) {
-				spin[BELOW(i,par->L)] *= -1;
-				queuePut(BELOW(i,par->L));
-				acc++;
-			}
-		if(spin[RIGHT(i,par->L)] == state)
-			if(dran()<prob) {
-				spin[RIGHT(i,par->L)] *= -1;
-				queuePut(RIGHT(i,par->L));
-				acc++;
-			}
-		if(spin[LEFT(i,par->L)] == state)
-			if(dran()<=prob) {
-				spin[LEFT(i,par->L)] *= -1;
-				queuePut(LEFT(i,par->L));
-				acc++;
-			}
+	prob = 1.0-exp(-2/par->t);
+	printf("prob: %f\n", prob);
+	while((pos = queueGet())!= 0) {
+		if(spin[ABOVE(pos,par->L)] == state && dran()<prob) {
+			spin[ABOVE(pos,par->L)] *= -1;
+			queuePut(ABOVE(pos,par->L));
+			acc++;
+		}
+		if(spin[BELOW(pos,par->L)] == state && dran()<prob) {
+			spin[BELOW(pos,par->L)] *= -1;
+			queuePut(BELOW(pos,par->L));
+			acc++;
+		}
+		if(spin[RIGHT(pos,par->L)] == state && dran()<prob) {
+			spin[RIGHT(pos,par->L)] *= -1;
+			queuePut(RIGHT(pos,par->L));
+			acc++;
+		}
+		if(spin[LEFT(pos,par->L)] == state && dran()<prob) {
+			spin[LEFT(pos,par->L)] *= -1;
+			queuePut(LEFT(pos,par->L));
+			acc++;
+		}
 	}
 	queueFree();
 	return acc;
