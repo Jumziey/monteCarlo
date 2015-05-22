@@ -71,30 +71,27 @@ double measure(Par *par, double *v, int *spin)
 	for(i=0; i<(par->L*par->L); i++)
 		m += spin[i];
 	
-	//Want the values per spin state
-	v[0] += e/pow(par->L,2);
-	v[1] += fabs(m)/pow(par->L,2);
-	v[2] += e/pow(par->L,2);
-	v[3] += pow(e,2)/pow(par->L,2);
+	//Values for the whole system
+	v[0] += e;
+	v[1] += fabs(m);
+	v[2] += pow(e,2);
 }
 
 void result(Par *par, double* v, int divide, int final)
 {
-	double ePerSpin, mPerSpin, Eavg, E2avg;
-	double cPerSpin;
+	double eSys, mSys, cSys, e2Sys;
+	double sysSize;
 
-	ePerSpin = v[0]/divide;
-	mPerSpin = v[1]/divide;
-	Eavg = v[2]/divide;
-	E2avg = v[3]/divide;
 	
-	cPerSpin = 1/pow(par->t,2) * ( E2avg - pow(Eavg,2));
+	eSys = v[0]/divide;
+	mSys = v[1]/divide;
+	e2Sys = v[3]/divide;
+	cSys = 1/pow(par->t,2) * ( e2Sys - pow(eSys,2));
+	sysSize = par->L*par->L;
 
-  if (final) {
+  if (final)
     printf("  --------  --------  --------\n");
-		printf(" %8f  %8f  %8f \n", ePerSpin, cPerSpin, mPerSpin);
-	} else
-		printf(" %8f %8f %8f \n", ePerSpin, cPerSpin, mPerSpin);
+	printf(" %8f  %8f  %8f \n", eSys/sysSize, cSys/sysSize, mSys/sysSize);
 }
 
 /*Here we actually put j=boltzmann because of reasons that 
@@ -140,18 +137,18 @@ void saveData(Par *par, double* v,int divide)
 	}
 	printf("Finalized data saved to: %s\n", filename);
 	
-	double ePerSpin, mPerSpin, Eavg, E2avg;
-	double cPerSpin;
+	double eSys, mSys, cSys, e2Sys;
+	double sysSize;
 
-	ePerSpin = v[0]/divide;
-	mPerSpin = v[1]/divide;
-	Eavg = v[2]/divide;
-	E2avg = v[3]/divide;
 	
-	cPerSpin = 1/pow(par->t,2) * ( E2avg - pow(Eavg,2));
+	eSys = v[0]/divide;
+	mSys = v[1]/divide;
+	e2Sys = v[3]/divide;
+	cSys = 1/pow(par->t,2) * ( e2Sys - pow(eSys,2));
+	sysSize = par->L*par->L;
 	
 	fp = fopen(filename, "w");
-	fprintf(fp,"%8f %8f %8f\n",ePerSpin, cPerSpin, mPerSpin);
+	fprintf(fp,"%8f %8f %8f\n", eSys/sysSize, cSys/sysSize, mSys/sysSize);
 	fclose(fp);
 	
 }
@@ -163,7 +160,7 @@ void mc(Par *par, int *spin)
 {
   int i, iblock, isamp, istep, ntherm = par->ntherm;
   double t = par->t, acc, accept = 0.0, L2 = par->L*par->L;
-  double v[4] = {0.0, 0.0, 0.0, 0.0};
+  double v[] = {0.0, 0.0, 0.0};
 
 
   //Read in the configuration for the present parameters if already present.
