@@ -136,7 +136,7 @@ void saveData(Par *par, double* v,int divide)
 	}
 	printf("Finalized data saved to: %s\n", filename);
 	
-	ddouble eSys, mSys, e2Sys;
+	double eSys, mSys, e2Sys;
 	double cPerSpin, sysSize;
 
 	sysSize = par->L*par->L;
