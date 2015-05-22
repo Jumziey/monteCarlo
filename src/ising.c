@@ -5,8 +5,8 @@
 #include <fcntl.h>
 #include <time.h>
 #include <math.h>
-#include "ran.h"
 
+#include "ran.h"
 #include "ising.h"
 
 char fname[FNAMESIZE];	
@@ -140,21 +140,17 @@ void saveData(Par *par, double* v,int divide)
 	double eSys, mSys, cSys, e2Sys;
 	double sysSize;
 
-	
+	sysSize = par->L*par->L;
 	eSys = v[0]/divide;
 	mSys = v[1]/divide;
 	e2Sys = v[3]/divide;
-	cSys = 1/pow(par->t,2) * ( e2Sys - pow(eSys,2));
-	sysSize = par->L*par->L;
+	cSys = 1/pow(par->t,2) * ( e2Sys/sysSize - pow(eSys/sysSize,2));
 	
 	fp = fopen(filename, "w");
 	fprintf(fp,"%8f %8f %8f\n", eSys/sysSize, cSys/sysSize, mSys/sysSize);
 	fclose(fp);
 	
 }
-	
-	
- 
 
 void mc(Par *par, int *spin)
 {
@@ -220,7 +216,6 @@ initialize_mc(Par *par, int *spin) {
 
   return 1;
 }
-
 
 int read_args(Par *par, char *arg)
 {
@@ -293,11 +288,9 @@ int read_args(Par *par, char *arg)
     return read_config(par, spin, s);
   }
 
-
   fprintf(stderr, "No such variable name: '%s'.\n", arg);
   return 0;
 }
-
 
 int
 main(int argc, char *argv[])
