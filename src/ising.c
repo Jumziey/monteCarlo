@@ -72,24 +72,23 @@ double measure(Par *par, double *v, int *spin)
 		m += spin[i];
 	
 	//Want the values per spin state
-	v[0] += e/(par->L*par->L);
-	v[1] += fabs(m)/(par->L*par->L);
-	v[2] += e/(par->L*par->L);
-	v[3] += pow(e,2)/(par->L*par->L);
+	v[0] += e/pow(par->L,2);
+	v[1] += fabs(m)/pow(par->L,2);
+	v[2] += e/pow(par->L,2);
+	v[3] += pow(e,2)/pow(par->L,2);
 }
 
 void result(Par *par, double* v, int divide, int final)
 {
 	double ePerSpin, mPerSpin, Eavg, E2avg;
-	double cSys, cPerSpin;
+	double cPerSpin;
 
 	ePerSpin = v[0]/divide;
 	mPerSpin = v[1]/divide;
 	Eavg = v[2]/divide;
 	E2avg = v[3]/divide;
 	
-	cSys = 1/pow(par->t,2) * ( E2avg - pow(Eavg,2));
-	cPerSpin = cSys/pow(par->L,2); 
+	cPerSpin = 1/pow(par->t,2) * ( E2avg - pow(Eavg,2));
 
   if (final) {
     printf("  --------  --------  --------\n");
@@ -142,18 +141,17 @@ void saveData(Par *par, double* v,int divide)
 	printf("Finalized data saved to: %s\n", filename);
 	
 	double ePerSpin, mPerSpin, Eavg, E2avg;
-	double cSys, cPerSpin;
+	double cPerSpin;
 
 	ePerSpin = v[0]/divide;
 	mPerSpin = v[1]/divide;
 	Eavg = v[2]/divide;
 	E2avg = v[3]/divide;
 	
-	cSys = 1/pow(par->t,2) * ( E2avg - pow(Eavg,2));
-	cPerSpin = cSys/pow(par->L,2);
+	cPerSpin = 1/pow(par->t,2) * ( E2avg - pow(Eavg,2));
 	
 	fp = fopen(filename, "w");
-	fprintf(fp,"%8f %8f %8f\n",v[0]/divide, cPerSpin, v[1]/divide);
+	fprintf(fp,"%8f %8f %8f\n",ePerSpin, cPerSpin, mPerSpin);
 	fclose(fp);
 	
 }
