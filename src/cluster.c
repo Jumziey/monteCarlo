@@ -14,7 +14,7 @@ int update(Par* par, int* spin) {
 	//I'll be suprised if the queue gets bigger
 	queueInit(size);
 	
-	pos = iran()%size;
+	pos = uran()%size;
 	state = spin[pos];
 	spin[pos] *= -1;
 	queuePut(pos);
