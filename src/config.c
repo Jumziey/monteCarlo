@@ -7,8 +7,6 @@
 
 #include "ising.h"
 
-
-
 int write_config(Par *par, int *spin, char *fname)
 {
   int L2 = par->L * par->L, fdesc;

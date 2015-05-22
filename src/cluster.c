@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdio.h>
+
 #include "queue.h"
 #include "ising.h"
 #include "ran.h"
