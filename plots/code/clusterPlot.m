@@ -27,9 +27,9 @@ data1024 = readData('cluster', sizes, temps1024, 1000, nblock, nsamp, seed)
 
 nsamp=1;
 
-loglog((data64(:,3)/(64^2)),tc-temps)
+loglog((data64(:,3)),tc-temps)
 hold on
-loglog((data256(:,3)/(256^2)),tc-temps)
+loglog((data256(:,3)),tc-temps)
 hold on
-loglog((data1024(:,3)/(1024^2)),tc-temps1024)
+loglog((data1024(:,3)),tc-temps1024)
 legend('64','256', '1024')
