@@ -85,8 +85,8 @@ void result(Par *par, double* v, int divide, int final)
 	sysSize = par->L*par->L;
 	eSys = v[0]/divide;
 	mSys = v[1]/divide;
-	e2Sys = v[3]/divide;
-	cPerSpin = 1/pow(par->t,2) * ( e2Sys/sysSize - pow(eSys/sysSize,2));
+	e2Sys = v[2]/divide;
+	cPerSpin = 1/pow(par->t,2) * (( e2Sys - pow(eSys,2)))/sysSize;
 
   if (final)
     printf("  --------  --------  --------\n");
@@ -136,14 +136,15 @@ void saveData(Par *par, double* v,int divide)
 	}
 	printf("Finalized data saved to: %s\n", filename);
 	
-	double eSys, mSys, e2Sys;
+	ddouble eSys, mSys, e2Sys;
 	double cPerSpin, sysSize;
 
 	sysSize = par->L*par->L;
 	eSys = v[0]/divide;
 	mSys = v[1]/divide;
-	e2Sys = v[3]/divide;
-	cPerSpin = 1/pow(par->t,2) * ( e2Sys/sysSize - pow(eSys/sysSize,2));
+	e2Sys = v[2]/divide;
+	cPerSpin = 1/pow(par->t,2) * (( e2Sys - pow(eSys,2)))/sysSize;
+	
 	
 	fp = fopen(filename, "w");
 	fprintf(fp,"%8f %8f %8f\n", eSys/sysSize, cPerSpin, mSys/sysSize);
