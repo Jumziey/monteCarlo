@@ -10,12 +10,12 @@ nblock=64;
 nsamp=1000;
 seed=0;
 
-data64 = readData('cluster', sizes, temps, 1000, nblock, nsamp, seed)
+data64 = readData('cluster', sizes, temps, 0, nblock, nsamp, seed)
 
 %Defining what values to read
 sizes = [256];
 
-data256 = readData('cluster', sizes, temps, 1000, nblock, nsamp, seed)
+data256 = readData('cluster', sizes, temps, 0, nblock, nsamp, seed)
 
 sizes = [1024];
 temps1024 = [2.265 2.266 2.267 2.268 2.269];
@@ -23,7 +23,7 @@ nblock=64;
 nsamp=1000;
 seed=0;
 
-data1024 = readData('cluster', sizes, temps1024, 1000, nblock, nsamp, seed)
+data1024 = readData('cluster', sizes, temps1024, 0, nblock, nsamp, seed)
 
 nsamp=1;
 

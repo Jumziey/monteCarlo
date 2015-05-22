@@ -8,7 +8,7 @@ nsamp=1000
 
 for T in "${temp[@]}"
 do
-	commando="./ising L=$L ntherm=1000 nblock=$nblock nsamp=$nsamp T=$T run"
+	commando="./ising L=$L nblock=$nblock nsamp=$nsamp T=$T run"
 	echo $commando
 	eval $commando
 done
