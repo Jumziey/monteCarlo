@@ -82,16 +82,15 @@ void result(Par *par, double* v, int divide, int final)
 	double eSys, mSys, cSys, e2Sys;
 	double sysSize;
 
-	
+	sysSize = par->L*par->L;
 	eSys = v[0]/divide;
 	mSys = v[1]/divide;
 	e2Sys = v[3]/divide;
-	cSys = 1/pow(par->t,2) * ( e2Sys - pow(eSys,2));
-	sysSize = par->L*par->L;
+	cPerSpin = 1/pow(par->t,2) * ( e2Sys/sysSize - pow(eSys/sysSize,2));
 
   if (final)
     printf("  --------  --------  --------\n");
-	printf(" %8f  %8f  %8f \n", eSys/sysSize, cSys/sysSize, mSys/sysSize);
+	printf(" %8f  %8f  %8f \n", eSys/sysSize, cPerSpin, mSys/sysSize);
 }
 
 /*Here we actually put j=boltzmann because of reasons that 
@@ -137,17 +136,17 @@ void saveData(Par *par, double* v,int divide)
 	}
 	printf("Finalized data saved to: %s\n", filename);
 	
-	double eSys, mSys, cSys, e2Sys;
-	double sysSize;
+	double eSys, mSys, e2Sys;
+	double cPerSpin, sysSize;
 
 	sysSize = par->L*par->L;
 	eSys = v[0]/divide;
 	mSys = v[1]/divide;
 	e2Sys = v[3]/divide;
-	cSys = 1/pow(par->t,2) * ( e2Sys/sysSize - pow(eSys/sysSize,2));
+	cPerSpin = 1/pow(par->t,2) * ( e2Sys/sysSize - pow(eSys/sysSize,2));
 	
 	fp = fopen(filename, "w");
-	fprintf(fp,"%8f %8f %8f\n", eSys/sysSize, cSys/sysSize, mSys/sysSize);
+	fprintf(fp,"%8f %8f %8f\n", eSys/sysSize, cPerSpin, mSys/sysSize);
 	fclose(fp);
 	
 }
