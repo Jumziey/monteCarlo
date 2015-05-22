@@ -21,7 +21,6 @@ int update(Par* par, int* spin) {
 	queuePut(pos);
 	
 	prob = 1.0-exp(-2/par->t);
-	printf("prob: %f\n", prob);
 	while((pos = queueGet())!= 0) {
 		if(spin[ABOVE(pos,par->L)] == state && dran()<prob) {
 			spin[ABOVE(pos,par->L)] *= -1;
