@@ -1,12 +1,12 @@
 CC = gcc
-CPPFLAGS = -DCLU
+CPPFLAGS = -DCLU -DVIS
 CFLAGS  = -g -O4
-LOADLIBES = -lm
+LOADLIBES = -lm -lg2
 VPATH = ../src
 
-INCLUDES = ran.h ising.h 
+INCLUDES = ran.h ising.h visualize.h
 
-OBJS = ising.o ran.o config.o cluster.o
+OBJS = ising.o ran.o config.o cluster.o visualize.o
 
 ising: ${OBJS}
 
