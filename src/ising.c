@@ -232,10 +232,6 @@ int read_args(Par *par, char *arg)
 
   if (!strcmp(arg, "run")) {
     if(initialize_mc(par, spin)) {
-    	/* We free spin only to get 
-    	 * a better result from valgrind ;)
-    	 */
-    	free(spin);
     	return 1;
     } else {
     	return 0;

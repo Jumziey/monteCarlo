@@ -6,11 +6,11 @@ nblock=1
 nsamp=1000
 
 
+commando="./ising L=$L nblock=$nblock nsamp=$nsamp"
 for T in "${temp[@]}"
 do
-	commando="./ising L=$L nblock=$nblock nsamp=$nsamp T=$T run"
-	echo $commando
-	eval $commando
+	commando="$commando T=$T run"
 done
-
+echo $commando
+eval $commando
 
