@@ -20,7 +20,7 @@ int update(Par* par, int* spin) {
 	spin[pos] *= -1;
 	queuePut(pos);
 	
-	prob = 1.0-exp(-2/par->t);
+	prob = 1.0-exp(-2.0/par->t);
 	while((pos = queueGet())!= 0) {
 		if(spin[ABOVE(pos,par->L)] == state && dran()<prob) {
 			spin[ABOVE(pos,par->L)] *= -1;
