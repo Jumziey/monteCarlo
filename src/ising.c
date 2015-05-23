@@ -44,6 +44,21 @@ double energyDiff(int eDiff) {
 	}
 }
 
+/*Here we actually put j=boltzmann because of reasons that 
+ * For reasons that even escapes our awesome instructor
+ */
+double spinEnergy(Par *par, int ind, int *spin) {
+	double e;
+	e = 0.0;
+	
+	e -= spin[ind]*spin[ABOVE(ind,par->L)];
+	e -= spin[ind]*spin[BELOW(ind,par->L)];
+	e -= spin[ind]*spin[RIGHT(ind,par->L)];
+	e -= spin[ind]*spin[LEFT(ind,par->L)];
+	
+	return e;
+}
+
 double measure(Par *par, double *v, int *spin)
 {
 	int i,j;
@@ -77,48 +92,40 @@ double measure(Par *par, double *v, int *spin)
 	v[2] += pow(e,2);
 }
 
-void result(Par *par, double* v, int divide, int final)
+/*Depending on the divide parameter vres is for the system
+ * or per spin
+ */
+void result(Par *par, int runs, int L2, double* v, double* vres)
 {
 	double eSys, mSys, e2Sys;
 	double cPerSpin, ePerSpin, mPerSpin, sysSize;
 
-	sysSize = par->L*par->L;
-	eSys = v[0]/divide;
-	mSys = v[1]/divide;
-	e2Sys = v[2]/divide;
+	eSys = v[0]/runs;
+	mSys = v[1]/runs;
+	e2Sys = v[2]/runs;
 	
-	cPerSpin = 1/pow(par->t,2) * (( e2Sys - pow(eSys,2))) / sysSize;
-	ePerSpin = eSys/sysSize;
-	mPerSpin = mSys/sysSize;
-
-  if (final)
-    printf("  --------  --------  --------\n");
-	printf(" %8f  %8f  %8f \n", ePerSpin, cPerSpin, mPerSpin);
+	//Energy, heat capacity, magnitisation
+	vres[0] = eSys/L2;
+	vres[1] = 1/pow(par->t,2) * (( e2Sys - pow(eSys,2)))/L2;
+	vres[2] = mSys/L2;
 }
 
-/*Here we actually put j=boltzmann because of reasons that 
- * For reasons that even escapes our awesome instructor
- */
-double spinEnergy(Par *par, int ind, int *spin) {
-	double e;
-	e = 0.0;
-	
-	e -= spin[ind]*spin[ABOVE(ind,par->L)];
-	e -= spin[ind]*spin[BELOW(ind,par->L)];
-	e -= spin[ind]*spin[RIGHT(ind,par->L)];
-	e -= spin[ind]*spin[LEFT(ind,par->L)];
-	
-	return e;
+void printresult(double *v, int final)
+{
+	if (final)
+    printf("  --------  --------  --------\n");
+	printf(" %8f  %8f  %8f \n", v[0], v[1], v[2]);
 }
 
 #define MAXRUNS 10
 #define PARVALS 6
-void saveData(Par *par, double* v,int divide)
+void saveData(Par *par, double* v)
 {
 	int i;
 	char sysVal[PARVALS][MAXRUNS];
 	char *sysValNames[] = {"L","t","ntherm","nblock","nsamp","seed"};
 	char *filename;
+	double vres[3];
 	FILE* fp;
 	
 	filename = calloc(22+MAXRUNS*PARVALS + 5,sizeof(char));
@@ -139,23 +146,10 @@ void saveData(Par *par, double* v,int divide)
 	}
 	printf("Finalized data saved to: %s\n", filename);
 	
-	double eSys, mSys, e2Sys;
-	double cPerSpin, ePerSpin, mPerSpin, sysSize;
-
-	sysSize = par->L*par->L;
-	eSys = v[0]/divide;
-	mSys = v[1]/divide;
-	e2Sys = v[2]/divide;
-	
-	cPerSpin = 1/pow(par->t,2) * (( e2Sys - pow(eSys,2))) / sysSize;
-	ePerSpin = eSys/sysSize;
-	mPerSpin = mSys/sysSize;
-	
-	
 	fp = fopen(filename, "w");
-	fprintf(fp,"%8f %8f %8f\n", ePerSpin, cPerSpin, mPerSpin);
+	fprintf(fp,"%8f %8f %8f\n", v[0], v[1], v[2]);
 	printf("================== SAVED DATA ================\n");
-	printf("%8f %8f %8f\n", ePerSpin, cPerSpin, mPerSpin);
+	printf("%8f %8f %8f\n", v[0], v[1], v[2]);
 	fclose(fp);
 	
 }
@@ -164,8 +158,9 @@ void mc(Par *par, int *spin)
 {
   int i, iblock, isamp, istep, ntherm = par->ntherm;
   double t = par->t, acc, accept = 0.0, L2 = par->L*par->L;
-  double v[] = {0.0, 0.0, 0.0};
-
+  double vtemp[3];
+  double vsamp[] = {0.0, 0.0, 0.0};
+	double vblock[] = {0.0, 0.0, 0.0};
 
   //Read in the configuration for the present parameters if already present.
   if (read_config(par, spin, fname))
@@ -191,17 +186,21 @@ void mc(Par *par, int *spin)
   for (iblock = 0; iblock < par->nblock; iblock++) {
     for (isamp = 0; isamp < par->nsamp; isamp++) {
       accept += update(par, spin);
-      measure(par, v, spin);
+      measure(par, vsamp, spin);
     }
     write_config(par, spin, fname);
-    result(par,v,par->nsamp*(iblock+1),0);
+    result(par,par->nsamp,L2, vsamp, vtemp);
+    printresult(vtemp, 0);
+    vsamp[0] = 0; vsamp[1] = 0; vsamp[2] = 0;
+    vblock[0] += vtemp[0]; vblock[1] += vtemp[1]; vblock[2] += vtemp[2];
   }
   
-	result(par,v,par->nblock*par->nsamp,1);
+	vblock[0] /= par->nblock; vblock[1] /= par->nblock; vblock[2] /= par->nblock;
+	printresult(vblock,1);
   acc = accept * 100.0 / (L2 * (par->nblock) * (par->nsamp));
   printf("\nAcceptance: %5.2f\n", acc);
 
-	saveData(par,v,par->nblock*par->nsamp);
+	saveData(par,vblock);
 }
 
 int 
