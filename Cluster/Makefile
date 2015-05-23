@@ -6,7 +6,7 @@ VPATH = ../src
 
 INCLUDES = ran.h ising.h 
 
-OBJS = ising.o ran.o config.o cluster.o queue.o
+OBJS = ising.o ran.o config.o cluster.o
 
 ising: ${OBJS}
 

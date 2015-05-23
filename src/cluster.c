@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "queue.h"
 #include "ising.h"
 #include "ran.h"
 
@@ -14,19 +13,14 @@ int update(Par* par, int* spin) {
 	
 	acc = 0;
 	size = par->L*par->L;
-	//I'll be suprised if the queue gets bigger
-	queueInit(size);
-	
-	prob = 1.0-exp(-2.0/par->t);
-	
 	pos = uran()%size;
 	state = spin[pos];
 	spin[pos] *= -1;
 	in = out = mem  = calloc(sizeof(int),size);
-	
 	*in++ = pos;
-	while(in-out) {
-		pos = *out++;
+	
+	prob = 1.0-exp(-2.0/par->t);
+	for(;in-out;pos = *out++) {
 		if(spin[ABOVE(pos,par->L)] == state && dran()<prob) {
 			spin[ABOVE(pos,par->L)] *= -1;
 			*in++ = ABOVE(pos,par->L);
