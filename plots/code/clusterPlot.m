@@ -1,7 +1,7 @@
 close all; clear all;
 
 %Defined in book
-tc = 2.269;
+tc = 2.26919;
 
 %Defining what values to read
 sizes = [64];

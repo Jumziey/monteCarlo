@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "queue.h"
 #include "ising.h"
@@ -8,6 +9,7 @@
 int update(Par* par, int* spin) {
 
 	int state, size,acc,pos;
+	int *in, *out, *mem;
 	double prob;
 	
 	acc = 0;
@@ -15,35 +17,38 @@ int update(Par* par, int* spin) {
 	//I'll be suprised if the queue gets bigger
 	queueInit(size);
 	
+	prob = 1.0-exp(-2.0/par->t);
+	
 	pos = uran()%size;
 	state = spin[pos];
 	spin[pos] *= -1;
-	queuePut(pos);
+	in = out = mem  = calloc(sizeof(int),size);
 	
-	prob = 1.0-exp(-2.0/par->t);
-	while((pos = queueGet())!= 0) {
+	*in++ = pos;
+	while(in-out) {
+		pos = *out++;
 		if(spin[ABOVE(pos,par->L)] == state && dran()<prob) {
 			spin[ABOVE(pos,par->L)] *= -1;
-			queuePut(ABOVE(pos,par->L));
+			*in++ = ABOVE(pos,par->L);
 			acc++;
 		}
 		if(spin[BELOW(pos,par->L)] == state && dran()<prob) {
 			spin[BELOW(pos,par->L)] *= -1;
-			queuePut(BELOW(pos,par->L));
+			*in++ = BELOW(pos,par->L);
 			acc++;
 		}
 		if(spin[RIGHT(pos,par->L)] == state && dran()<prob) {
 			spin[RIGHT(pos,par->L)] *= -1;
-			queuePut(RIGHT(pos,par->L));
+			*in++ = RIGHT(pos,par->L);
 			acc++;
 		}
 		if(spin[LEFT(pos,par->L)] == state && dran()<prob) {
 			spin[LEFT(pos,par->L)] *= -1;
-			queuePut(LEFT(pos,par->L));
+			*in++ = LEFT(pos,par->L);
 			acc++;
 		}
 	}
-	queueFree();
+	free(mem);
 	return acc;
 }
 
