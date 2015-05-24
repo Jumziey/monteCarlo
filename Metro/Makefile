@@ -1,11 +1,11 @@
 CC = gcc
 CFLAGS  = -g -O4 --std=c99
-LOADLIBES = -lm
+LOADLIBES = -lm -lg2
 VPATH = ../src
 
-INCLUDES = ran.h ising.h
+INCLUDES = ran.h ising.h visualize.h
 
-OBJS = ising.o config.o ran.o metro.o
+OBJS = ising.o config.o ran.o metro.o visualize.o
 
 ising: ${OBJS}
 

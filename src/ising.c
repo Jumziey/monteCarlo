@@ -8,6 +8,7 @@
 
 #include "ran.h"
 #include "ising.h"
+#include "visualize.h"
 
 char fname[FNAMESIZE];	
 double eDiffValues[5];
@@ -186,6 +187,9 @@ void mc(Par *par, int *spin)
   for (iblock = 0; iblock < par->nblock; iblock++) {
     for (isamp = 0; isamp < par->nsamp; isamp++) {
       accept += update(par, spin);
+#ifdef VIS
+			visualize(par->L,spin);
+#endif
       measure(par, vsamp, spin);
     }
     write_config(par, spin, fname);
@@ -307,17 +311,26 @@ main(int argc, char *argv[])
   par->nsamp = 10000;
   par->seed = 0;
 
+
   if (argc == 1) {
     printf("Usage: %s L=16 T=2.26\n", argv[0]);
     printf("Optional arguments (with defaults) nblock=%d nsamp=%d ntherm=%d seed=%d\n",
 	   par->nblock, par->nsamp, par->ntherm, par->seed);
     exit(EXIT_SUCCESS);
   }
+  
+#ifdef VIS
+    visInit();
+#endif
 
   // Interpret the commands given in the argument list.
   for (iarg = 1; iarg < argc; iarg++)
     if (!read_args(par, argv[iarg]))
       exit(EXIT_FAILURE);
+      
+#ifdef VIS
+    visClose();
+#endif
 
   free(par);
 }
