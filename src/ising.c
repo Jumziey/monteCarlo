@@ -188,7 +188,7 @@ void mc(Par *par, int *spin)
     for (isamp = 0; isamp < par->nsamp; isamp++) {
       accept += update(par, spin);
 #ifdef VIS
-			visualize(par,spin);
+			visualize(par->L,spin);
 #endif
       measure(par, vsamp, spin);
     }

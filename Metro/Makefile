@@ -1,6 +1,5 @@
 CC = gcc
 CFLAGS  = -g -O4 --std=c99
-CPPFLAGS = -DVIS
 LOADLIBES = -lm -lg2
 VPATH = ../src
 

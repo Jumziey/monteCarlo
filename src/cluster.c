@@ -13,7 +13,7 @@ int update(Par* par, int* spin) {
 	
 	acc = 0;
 	size = par->L*par->L;
-	pos = uran()%size;
+	pos = iran()%size;
 	state = spin[pos];
 	spin[pos] *= -1;
 	in = out = mem  = calloc(sizeof(int),size);
@@ -43,6 +43,7 @@ int update(Par* par, int* spin) {
 		}
 	}
 	free(mem);
+
 	return acc;
 }
 
