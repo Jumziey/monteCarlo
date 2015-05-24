@@ -12,11 +12,9 @@ metro: ${OBJS} metro.o
 
 cluster: ${OBJS} cluster.o
 
-ising: ${OBJS}
-
 summary: summary.o
 
 ${OBJS}: ${INCLUDES} Makefile
 
 clean:
-	rm *.o ising
+	rm *.o cluster metro
