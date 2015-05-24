@@ -194,13 +194,14 @@ void mc(Par *par, int *spin)
   for (iblock = 0; iblock < par->nblock; iblock++) {
     for (isamp = 0; isamp < par->nsamp; isamp++) {
       accept += update(par, spin);
-      vtemp[0] = 0; vtemp[1] = 0; vtemp[2] = 0;
+
 #ifdef VIS
 			visualize(par->L,spin);
 #endif
+	    vtemp[0] = 0; vtemp[1] = 0; vtemp[2] = 0;
       measure(par, vtemp, spin);
       vsamp[0] += vtemp[0]; vsamp[1] += vtemp[1]; vsamp[2] += vtemp[2];
-      tcorr[isamp] += vtemp[1];
+      tcorr[isamp] += vtemp[0];
     }
     write_config(par, spin, fname);
     result(par,par->nsamp,L2, vsamp, vtemp);
@@ -215,7 +216,7 @@ void mc(Par *par, int *spin)
   printf("\nAcceptance: %5.2f\n", acc);
   
   for(isamp = 0; isamp < par->nsamp; isamp++)
-  	tcorr[isamp] /= par->nblock;
+  	tcorr[isamp] /= (par->nblock*L2);
 
 	saveData(par,vblock, tcorr);
 	free(tcorr);
