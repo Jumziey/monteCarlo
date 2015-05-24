@@ -88,34 +88,34 @@ double measure(Par *par, double *v, int *spin)
 		m += spin[i];
 	
 	//Values for the whole system
-	v[0] += e;
-	v[1] += fabs(m);
-	v[2] += pow(e,2);
+	v[0] = e;
+	v[1] = fabs(m);
+	v[2] = pow(e,2);
 }
 
 /*Depending on the divide parameter vres is for the system
  * or per spin
  */
-void result(Par *par, int runs, int L2, double* v, double* vres)
-{
-	double eSys, mSys, e2Sys;
-	double cPerSpin, ePerSpin, mPerSpin, sysSize;
 
+void result(Par *par, double *v, int runs, int final)
+{
+	int L2;
+	double eSys, mSys, e2Sys;
+	double ePerSpin, mPerSpin, cPerSpin;
+	
+	L2 = par->L*par->L;
+	
 	eSys = v[0]/runs;
 	mSys = v[1]/runs;
 	e2Sys = v[2]/runs;
 	
-	//Energy, heat capacity, magnitisation
-	vres[0] = eSys/L2;
-	vres[1] = 1/pow(par->t,2) * (( e2Sys - pow(eSys,2)))/L2;
-	vres[2] = mSys/L2;
-}
-
-void printresult(double *v, int final)
-{
+	ePerSpin = eSys/L2;
+	cPerSpin = 1/pow(par->t,2) * (e2Sys - pow(eSys,2))/L2;
+	mPerSpin = mSys/L2;
+	
 	if (final)
     printf("  --------  --------  --------\n");
-	printf(" %8f  %8f  %8f \n", v[0], v[1], v[2]);
+	printf(" %8f  %8f  %8f \n", ePerSpin, cPerSpin, mPerSpin);
 }
 
 #define MAXRUNS 10
@@ -151,11 +151,12 @@ void saveData(Par *par, double* v, double* tcorr)
 	fprintf(fp,"%8f %8f %8f\n", v[0], v[1], v[2]);
 	fclose(fp);
 	
+	
 	//Time correlation data
 	filename = strcat(filename, "tcorr");
 	fp = fopen(filename, "w");
 	for(isamp = 0; isamp < par->nsamp; isamp++)
-		fprintf(fp, "%8f ", tcorr[isamp]);
+		fprintf(fp, "%16f ", tcorr[isamp]);
 	fprintf(fp, "\n");
 	fclose(fp);
 	
@@ -166,7 +167,7 @@ void mc(Par *par, int *spin)
   int i, iblock, isamp, istep, ntherm = par->ntherm;
   double t = par->t, acc, accept = 0.0, L2 = par->L*par->L;
   double *tcorr;
-  double vtemp[3];
+  double v[3];
   double vsamp[] = {0.0, 0.0, 0.0};
 	double vblock[] = {0.0, 0.0, 0.0};
 
@@ -185,7 +186,9 @@ void mc(Par *par, int *spin)
   printf("\nntherm  nblock   nsamp   seed\n");
   printf(" %5d  %5d   %5d   %d\n", ntherm, par->nblock, par->nsamp, par->seed);
   printf("\n energy      cv        magn     \n");
-
+	
+	
+	//Initialize time correlation vector
 	tcorr = calloc(par->nsamp, sizeof(double));
   //Thermalize the system 
   for (i = 0; i < ntherm; i++)
@@ -194,30 +197,51 @@ void mc(Par *par, int *spin)
   for (iblock = 0; iblock < par->nblock; iblock++) {
     for (isamp = 0; isamp < par->nsamp; isamp++) {
       accept += update(par, spin);
-
 #ifdef VIS
 			visualize(par->L,spin);
 #endif
-	    vtemp[0] = 0; vtemp[1] = 0; vtemp[2] = 0;
-      measure(par, vtemp, spin);
-      vsamp[0] += vtemp[0]; vsamp[1] += vtemp[1]; vsamp[2] += vtemp[2];
-      tcorr[isamp] += vtemp[0];
+      measure(par, v, spin);
+      vsamp[0] += v[0]; vsamp[1] += v[1]; vsamp[2] += v[2];
+      //For time correlation
+      tcorr[isamp] += v[0];
     }
     write_config(par, spin, fname);
-    result(par,par->nsamp,L2, vsamp, vtemp);
-    printresult(vtemp, 0);
+    
+    vblock[0] += vsamp[0] / par->nsamp;
+    vblock[1] += vsamp[1] / par->nsamp;
+    vblock[2] += vsamp[2] / par->nsamp;
+   
+    result(par, vsamp, par->nsamp, 0);
     vsamp[0] = 0; vsamp[1] = 0; vsamp[2] = 0;
-    vblock[0] += vtemp[0]; vblock[1] += vtemp[1]; vblock[2] += vtemp[2];
   }
   
 	vblock[0] /= par->nblock; vblock[1] /= par->nblock; vblock[2] /= par->nblock;
-	printresult(vblock,1);
+	result(par, vblock, 1, 1);
   acc = accept * 100.0 / (L2 * (par->nblock) * (par->nsamp));
   printf("\nAcceptance: %5.2f\n", acc);
   
+  //Averaging the nsamps(or time steps)
   for(isamp = 0; isamp < par->nsamp; isamp++)
   	tcorr[isamp] /= (par->nblock*L2);
-
+  
+  //Calculating time correlation
+  double avg, var;
+  //Variance
+  var = (vblock[2]-pow(vblock[0],2))/L2;
+  //Averaging
+  for(isamp = 0; isamp < par->nsamp; isamp++)
+  	avg += tcorr[isamp];
+  avg /= par->nsamp;
+  printf("avg: %8f\n", avg);
+  printf("eh: %8f\n", fabs(tcorr[0]-avg));
+  //Translation to time correlation
+  for(isamp=1; isamp < par->nsamp; isamp++) {
+  	tcorr[isamp] = fabs(tcorr[0]-avg)*fabs(tcorr[isamp]-avg);
+  	//printf("tcorr[%d] = %8f \n", isamp, tcorr[isamp]);
+  }
+  	
+  
+  
 	saveData(par,vblock, tcorr);
 	free(tcorr);
 }
