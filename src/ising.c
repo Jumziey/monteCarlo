@@ -120,9 +120,9 @@ void printresult(double *v, int final)
 
 #define MAXRUNS 10
 #define PARVALS 6
-void saveData(Par *par, double* v)
+void saveData(Par *par, double* v, double* tcorr)
 {
-	int i;
+	int i, isamp;
 	char sysVal[PARVALS][MAXRUNS];
 	char *sysValNames[] = {"L","t","ntherm","nblock","nsamp","seed"};
 	char *filename;
@@ -149,8 +149,14 @@ void saveData(Par *par, double* v)
 	
 	fp = fopen(filename, "w");
 	fprintf(fp,"%8f %8f %8f\n", v[0], v[1], v[2]);
-	printf("================== SAVED DATA ================\n");
-	printf("%8f %8f %8f\n", v[0], v[1], v[2]);
+	fclose(fp);
+	
+	//Time correlation data
+	filename = strcat(filename, "tcorr");
+	fp = fopen(filename, "w");
+	for(isamp = 0; isamp < par->nsamp; isamp++)
+		fprintf(fp, "%8f ", tcorr[isamp]);
+	fprintf(fp, "\n");
 	fclose(fp);
 	
 }
@@ -159,6 +165,7 @@ void mc(Par *par, int *spin)
 {
   int i, iblock, isamp, istep, ntherm = par->ntherm;
   double t = par->t, acc, accept = 0.0, L2 = par->L*par->L;
+  double *tcorr;
   double vtemp[3];
   double vsamp[] = {0.0, 0.0, 0.0};
 	double vblock[] = {0.0, 0.0, 0.0};
@@ -177,9 +184,9 @@ void mc(Par *par, int *spin)
   printf("\n====    %d x %d     T = %g    ====\n", par->L, par->L, par->t);
   printf("\nntherm  nblock   nsamp   seed\n");
   printf(" %5d  %5d   %5d   %d\n", ntherm, par->nblock, par->nsamp, par->seed);
-  
   printf("\n energy      cv        magn     \n");
 
+	tcorr = calloc(par->nsamp, sizeof(double));
   //Thermalize the system 
   for (i = 0; i < ntherm; i++)
     update(par, spin);
@@ -187,10 +194,13 @@ void mc(Par *par, int *spin)
   for (iblock = 0; iblock < par->nblock; iblock++) {
     for (isamp = 0; isamp < par->nsamp; isamp++) {
       accept += update(par, spin);
+      vtemp[0] = 0; vtemp[1] = 0; vtemp[2] = 0;
 #ifdef VIS
 			visualize(par->L,spin);
 #endif
-      measure(par, vsamp, spin);
+      measure(par, vtemp, spin);
+      vsamp[0] += vtemp[0]; vsamp[1] += vtemp[1]; vsamp[2] += vtemp[2];
+      tcorr[isamp] += vtemp[1];
     }
     write_config(par, spin, fname);
     result(par,par->nsamp,L2, vsamp, vtemp);
@@ -203,8 +213,12 @@ void mc(Par *par, int *spin)
 	printresult(vblock,1);
   acc = accept * 100.0 / (L2 * (par->nblock) * (par->nsamp));
   printf("\nAcceptance: %5.2f\n", acc);
+  
+  for(isamp = 0; isamp < par->nsamp; isamp++)
+  	tcorr[isamp] /= par->nblock;
 
-	saveData(par,vblock);
+	saveData(par,vblock, tcorr);
+	free(tcorr);
 }
 
 int 
