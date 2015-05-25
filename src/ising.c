@@ -147,8 +147,22 @@ void saveData(Par *par, double* v)
 	}
 	printf("Finalized data saved to: %s\n", filename);
 	
+	int L2;
+	double eSys, mSys, e2Sys;
+	double ePerSpin, mPerSpin, cPerSpin;
+	
+	L2 = par->L*par->L;
+	
+	eSys = v[0];
+	mSys = v[1];
+	e2Sys = v[2];
+	
+	ePerSpin = eSys/L2;
+	cPerSpin = 1/pow(par->t,2) * (e2Sys - pow(eSys,2))/L2;
+	mPerSpin = mSys/L2;
+	
 	fp = fopen(filename, "w");
-	fprintf(fp,"%8f %8f %8f\n", v[0], v[1], v[2]);
+	fprintf(fp,"%8f %8f %8f\n", ePerSpin, cPerSpin, mPerSpin);
 	fclose(fp);	
 }
 
@@ -184,12 +198,11 @@ void mc(Par *par, int *spin)
   for (iblock = 0; iblock < par->nblock; iblock++) {
     for (isamp = 0; isamp < par->nsamp; isamp++) {
       accept += update(par, spin);
+      measure(par, v, spin);
+      vsamp[0] += v[0]; vsamp[1] += v[1]; vsamp[2] += v[2];
 #ifdef VIS
 			visualize(par->L,spin);
 #endif
-      measure(par, v, spin);
-      vsamp[0] += v[0]; vsamp[1] += v[1]; vsamp[2] += v[2];
-      //For time correlation
     }
     write_config(par, spin, fname);
     
