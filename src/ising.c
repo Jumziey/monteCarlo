@@ -126,7 +126,6 @@ void saveData(Par *par, double* v)
 	char sysVal[PARVALS][MAXRUNS];
 	char *sysValNames[] = {"L","t","ntherm","nblock","nsamp","seed"};
 	char *filename;
-	double vres[3];
 	FILE* fp;
 	
 	filename = calloc(22+MAXRUNS*PARVALS + 5,sizeof(char));
@@ -164,12 +163,38 @@ void saveData(Par *par, double* v)
 	fp = fopen(filename, "w");
 	fprintf(fp,"%8f %8f %8f\n", ePerSpin, cPerSpin, mPerSpin);
 	fclose(fp);	
+	
+	//Save timecorrelation
+	filename = strcat(filename, "tcorr");
+	fp = fopen(filename, "w");
+	for(isamp = 0; isamp < par->nsamp; isamp++)
+		fprintf(fp, "%16f ", tcorr[isamp])
+	fprintf(fp,"\n");
+	fclose(fp);
 }
+
+void timecorr(Par* par, double* vserie, double* tcorr) {
+	int isamp;
+	double vavg = 0.0, v2avg = 0.0; var = 0.0;
+	
+	for(isamp = 0; isamp < par->nsamp; isamp++) {
+		vavg += vserie[isamp];
+		v2avg += pow(vserie[isamp],2);
+	}
+	vavg /= par->nsamp;
+	v2avg /= par->nsamp;
+	
+	//var = v2avg-pow(vavg,2);
+	for(isamp = 0; isamp < par->nsamp; isamp++)
+		tcorr[isamp] += (eserie[0]-avg)*(eserie[isamp]-avg);
+}
+	
 
 void mc(Par *par, int *spin)
 {
   int i, iblock, isamp, istep, ntherm = par->ntherm;
   double t = par->t, acc, accept = 0.0, L2 = par->L*par->L;
+  double *tcorr, *eserie;
   double v[3];
   double vsamp[] = {0.0, 0.0, 0.0};
 	double vblock[] = {0.0, 0.0, 0.0};
@@ -195,11 +220,14 @@ void mc(Par *par, int *spin)
   for (i = 0; i < ntherm; i++)
     update(par, spin);
 
+	eserie = malloc(nsamp*sizeof(double));
+	tcorr = calloc(nsamp, sizeof(double));
   for (iblock = 0; iblock < par->nblock; iblock++) {
     for (isamp = 0; isamp < par->nsamp; isamp++) {
       accept += update(par, spin);
       measure(par, v, spin);
       vsamp[0] += v[0]; vsamp[1] += v[1]; vsamp[2] += v[2];
+      eserie[isamp] = v[0];
 #ifdef VIS
 			visualize(par->L,spin);
 #endif
@@ -210,6 +238,7 @@ void mc(Par *par, int *spin)
     vblock[1] += vsamp[1] / par->nsamp;
     vblock[2] += vsamp[2] / par->nsamp;
    	
+   	timecorr(par, eserie, tcorr);
     result(par, vsamp, par->nsamp, 0);
     vsamp[0] = 0; vsamp[1] = 0; vsamp[2] = 0;
   }
@@ -219,7 +248,11 @@ void mc(Par *par, int *spin)
   acc = accept * 100.0 / (L2 * (par->nblock) * (par->nsamp));
   printf("\nAcceptance: %5.2f\n", acc);
   
-	saveData(par,vblock);
+  for(isamp = 0; isamp < par->nsamp; isamp++)
+  	tcorr[isamp] /= par->nblock;
+  
+	saveData(par,vblock, tcorr);
+	free(eserie); free(tcorr);
 }
 
 int 
