@@ -320,13 +320,6 @@ main(int argc, char *argv[])
   int i, iarg;
   Par *par = malloc(sizeof(Par));
 
-  par->L = 0;
-  par->t = 2.26;
-  par->nblock = 1;
-  par->nsamp = 10000;
-  par->seed = 0;
-
-
   if (argc == 1) {
     printf("Usage: %s L=16 T=2.26\n", argv[0]);
     printf("Optional arguments (with defaults) nblock=%d nsamp=%d ntherm=%d seed=%d\n",
