@@ -32,9 +32,8 @@ function timeEnergy = readTimeCorr(update, L, temps, ntherm, nblock, nsamp, seed
 			filename = strcat(filename,strtmp);
 		end
 		filename = strcat(filename, 'tcorr');
-		disp(filename);
 		%Lets save away the heat capacities and magnisations
-		tmp = load(filename)'
+		tmp = load(filename)';
 		timeEnergy = [timeEnergy tmp];
 		filename = '';
 	end
