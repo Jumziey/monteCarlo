@@ -126,11 +126,11 @@ void saveData(Par *par, double* v, double* tcorr, double* mag)
 	int i, isamp;
 	char sysVal[PARVALS][MAXRUNS];
 	char *sysValNames[] = {"L","t","ntherm","nblock","nsamp","seed"};
-	char *filename;
+	char *filename, *orig;
 	FILE* fp;
 	
 	filename = calloc(22+MAXRUNS*PARVALS + 5,sizeof(char));
-	orig = alloc(22+MAXRUNS*PARVALS + 5,sizeof(char));
+	orig = calloc(22+MAXRUNS*PARVALS + 5,sizeof(char));
 	
 	sprintf(sysVal[0], "%d", par->L);
 	sprintf(sysVal[1], "%g", par->t);
@@ -166,7 +166,8 @@ void saveData(Par *par, double* v, double* tcorr, double* mag)
 	fprintf(fp,"%8f %8f %8f\n", ePerSpin, cPerSpin, mPerSpin);
 	fclose(fp);	
 	
-	memcpy(orig, filename, (22+MAXRUNS*PARVALS + 5)*sizeof(char))
+	//Now we're just appending stuff to save
+	memcpy(orig, filename, (22+MAXRUNS*PARVALS + 5)*sizeof(char));
 	
 	//Save timecorrelation
 	filename = strcat(orig, "tcorr");
@@ -179,7 +180,7 @@ void saveData(Par *par, double* v, double* tcorr, double* mag)
 	//Binder's cumulant
 	filename = strcat(orig, "binders");
 	fp = fopen(filename, "w");
-	fprintf(fp, "%8f \n", magblock[0]/magblock[1]);
+	fprintf(fp, "%8f \n", mag[0]/mag[1]);
 	fclose(fp);
 	
 }
