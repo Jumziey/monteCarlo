@@ -9,6 +9,7 @@
 #include "ran.h"
 #include "ising.h"
 #include "visualize.h"
+#include "timecorr.h"
 
 char fname[FNAMESIZE];	
 double eDiffValues[5];
@@ -120,7 +121,7 @@ void result(Par *par, double *v, int runs, int final)
 
 #define MAXRUNS 10
 #define PARVALS 6
-void saveData(Par *par, double* v, double* tcorr)
+void saveData(Par *par, double* v, double* tcorr, double* mag)
 {
 	int i, isamp;
 	char sysVal[PARVALS][MAXRUNS];
@@ -129,6 +130,7 @@ void saveData(Par *par, double* v, double* tcorr)
 	FILE* fp;
 	
 	filename = calloc(22+MAXRUNS*PARVALS + 5,sizeof(char));
+	orig = alloc(22+MAXRUNS*PARVALS + 5,sizeof(char));
 	
 	sprintf(sysVal[0], "%d", par->L);
 	sprintf(sysVal[1], "%g", par->t);
@@ -164,51 +166,23 @@ void saveData(Par *par, double* v, double* tcorr)
 	fprintf(fp,"%8f %8f %8f\n", ePerSpin, cPerSpin, mPerSpin);
 	fclose(fp);	
 	
+	memcpy(orig, filename, (22+MAXRUNS*PARVALS + 5)*sizeof(char))
+	
 	//Save timecorrelation
-	filename = strcat(filename, "tcorr");
+	filename = strcat(orig, "tcorr");
 	fp = fopen(filename, "w");
 	for(isamp = 0; isamp < par->nsamp; isamp++)
 		fprintf(fp, "%16f ", tcorr[isamp]);
 	fprintf(fp,"\n");
 	fclose(fp);
+	
+	//Binder's cumulant
+	filename = strcat(orig, "binders");
+	fp = fopen(filename, "w");
+	fprintf(fp, "%8f \n", magblock[0]/magblock[1]);
+	fclose(fp);
+	
 }
-
-void timecorr(Par* par, double* vserie, double* tcorr) {
-	int isamp;
-	double vavg = 0.0;
-	
-	for(isamp = 0; isamp < par->nsamp; isamp++)
-		vavg += vserie[isamp];
-	vavg /= par->nsamp;
-	
-	for(isamp = 0; isamp < par->nsamp; isamp++) 
-		vavg += vserie[isamp];
-	vavg /= par->nsamp;
-	
-	for(isamp = 0; isamp < par->nsamp; isamp++)
-		tcorr[isamp] += (vserie[0]-vavg)*(vserie[isamp]-vavg);
-}
-
-void tcorrnorm(Par* par, double* tcorr) {
-	int isamp;
-	double max=0.0, min=0.0;
-	
-	for(isamp = 0; isamp < par->nsamp; isamp++)
-		if(tcorr[isamp] < min)
-			min = tcorr[isamp];
-	
-	for(isamp = 0; isamp < par->nsamp; isamp++) {
-		if(min < 0)
-			tcorr[isamp] -= min; //Yes logic is slightly obfuscated
-		if(tcorr[isamp] > max)
-			max = tcorr[isamp];
-	}
-	
-	for(isamp = 0; isamp < par->nsamp; isamp++)
-		tcorr[isamp] /= max;
-}
-		
-		
 		
 void mc(Par *par, int *spin)
 {
@@ -216,6 +190,8 @@ void mc(Par *par, int *spin)
   double t = par->t, acc, accept = 0.0, L2 = par->L*par->L;
   double *tcorr, *eserie;
   double v[3];
+  double magsamp[] = {0.0, 0.0};
+  double magblock[] = {0.0, 0.0};
   double vsamp[] = {0.0, 0.0, 0.0};
 	double vblock[] = {0.0, 0.0, 0.0};
 
@@ -240,14 +216,19 @@ void mc(Par *par, int *spin)
   for (i = 0; i < ntherm; i++)
     update(par, spin);
 
+	//Allocate arrays for measurement series
 	eserie = malloc(par->nsamp*sizeof(double));
 	tcorr = calloc(par->nsamp, sizeof(double));
   for (iblock = 0; iblock < par->nblock; iblock++) {
     for (isamp = 0; isamp < par->nsamp; isamp++) {
       accept += update(par, spin);
       measure(par, v, spin);
+      
       vsamp[0] += v[0]; vsamp[1] += v[1]; vsamp[2] += v[2];
+      
       eserie[isamp] = v[0];
+      
+      magsamp[0] += pow(v[0],2); magsamp[1] += pow(v[1], 4);
 #ifdef VIS
 			visualize(par->L,spin);
 #endif
@@ -257,10 +238,14 @@ void mc(Par *par, int *spin)
     vblock[0] += vsamp[0] / par->nsamp;
     vblock[1] += vsamp[1] / par->nsamp;
     vblock[2] += vsamp[2] / par->nsamp;
+    
+    magblock[0] += magsamp[0]/par->nsamp;
+    magblock[1] += magsamp[1]/par->nsamp;
    	
-   	timecorr(par, eserie, tcorr);
+   	timecorr(par->nsamp, eserie, tcorr);
     result(par, vsamp, par->nsamp, 0);
     vsamp[0] = 0; vsamp[1] = 0; vsamp[2] = 0;
+    magsamp[0] = 0; magsamp[1] = 0;
   }
   
 	vblock[0] /= par->nblock; vblock[1] /= par->nblock; vblock[2] /= par->nblock;
@@ -268,9 +253,10 @@ void mc(Par *par, int *spin)
   acc = accept * 100.0 / (L2 * (par->nblock) * (par->nsamp));
   printf("\nAcceptance: %5.2f\n", acc);
   
-  tcorrnorm(par, tcorr);
+  magblock[0] /= par->nblock; magblock[1] /=par->nblock;
+  tcorrnorm(par->nsamp, tcorr);
   
-	saveData(par,vblock, tcorr);
+	saveData(par,vblock, tcorr, magblock);
 	free(eserie); free(tcorr);
 }
 
@@ -371,6 +357,9 @@ main(int argc, char *argv[])
 {
   int i, iarg;
   Par *par = malloc(sizeof(Par));
+  
+  par->nsamp = 1;
+  par->nblock = 1;
 
   if (argc == 1) {
     printf("Usage: %s L=16 T=2.26\n", argv[0]);

@@ -17,7 +17,7 @@ tEq = [2.05 2.15];
 cEq = [(eSim(2)-eSim(1))/(temps(2)-temps(1)) (eSim(3) - eSim(2))/(temps(3)-temps(2))];
 
 
-plot(temps,cSim, 'x')
+plot(temps,cSim, 'x:')
 hold on
 plot(tEq, cEq', 'o', 'color', [1 .5 0])
 axis([1.95 2.25 0.7 1.4])

@@ -4,9 +4,9 @@ CFLAGS  = -g -O2
 LOADLIBES = -lm -lg2
 VPATH = ../src
 
-INCLUDES = ran.h ising.h visualize.h
+INCLUDES = ran.h ising.h visualize.h timecorr.h
 
-OBJS = ising.o ran.o config.o visualize.o
+OBJS = ising.o ran.o config.o visualize.o timecorr.o
 
 metro: ${OBJS} metro.o
 
