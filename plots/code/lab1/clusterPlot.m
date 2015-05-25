@@ -19,15 +19,15 @@ nsamp=1000;
 data256 = readData('cluster', sizes, temps, 1000, nblock, nsamp, seed)
 
 sizes = [1024];
-temps1024 = [2.265 2.266 2.267 2.268 2.269];
+temps1024 = [ 2.24 2.25 2.255 2.26 2.262 2.265 2.266 2.267 2.268 2.269];
 nblock=64;
-nsamp=10000;
+nsamp=1000;
 
 data1024 = readData('cluster', sizes, temps1024, 1000, nblock, nsamp, seed)
 
-loglog(tc-temps,(data64(:,3)))
+loglog(tc-temps,(data64(:,3)),'o:')
 hold on
-loglog(tc-temps,(data256(:,3)))
+loglog(tc-temps,(data256(:,3)),'x:')
 hold on
-loglog(tc-temps1024,(data1024(:,3)))
-legend('64','256', '1024')
+loglog(tc-temps1024,(data1024(:,3)),'d:')
+legend('64','256', '1024', 'Location', 'northwest')
