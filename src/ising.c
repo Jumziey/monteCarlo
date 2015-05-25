@@ -120,7 +120,7 @@ void result(Par *par, double *v, int runs, int final)
 
 #define MAXRUNS 10
 #define PARVALS 6
-void saveData(Par *par, double* v)
+void saveData(Par *par, double* v, double* tcorr)
 {
 	int i, isamp;
 	char sysVal[PARVALS][MAXRUNS];
@@ -168,14 +168,14 @@ void saveData(Par *par, double* v)
 	filename = strcat(filename, "tcorr");
 	fp = fopen(filename, "w");
 	for(isamp = 0; isamp < par->nsamp; isamp++)
-		fprintf(fp, "%16f ", tcorr[isamp])
+		fprintf(fp, "%16f ", tcorr[isamp]);
 	fprintf(fp,"\n");
 	fclose(fp);
 }
 
 void timecorr(Par* par, double* vserie, double* tcorr) {
 	int isamp;
-	double vavg = 0.0, v2avg = 0.0; var = 0.0;
+	double vavg = 0.0, v2avg = 0.0, var = 0.0;
 	
 	for(isamp = 0; isamp < par->nsamp; isamp++) {
 		vavg += vserie[isamp];
@@ -186,7 +186,7 @@ void timecorr(Par* par, double* vserie, double* tcorr) {
 	
 	//var = v2avg-pow(vavg,2);
 	for(isamp = 0; isamp < par->nsamp; isamp++)
-		tcorr[isamp] += (eserie[0]-avg)*(eserie[isamp]-avg);
+		tcorr[isamp] += (vserie[0]-vavg)*(vserie[isamp]-vavg);
 }
 	
 
@@ -220,8 +220,8 @@ void mc(Par *par, int *spin)
   for (i = 0; i < ntherm; i++)
     update(par, spin);
 
-	eserie = malloc(nsamp*sizeof(double));
-	tcorr = calloc(nsamp, sizeof(double));
+	eserie = malloc(par->nsamp*sizeof(double));
+	tcorr = calloc(par->nsamp, sizeof(double));
   for (iblock = 0; iblock < par->nblock; iblock++) {
     for (isamp = 0; isamp < par->nsamp; isamp++) {
       accept += update(par, spin);
