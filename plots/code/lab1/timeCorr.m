@@ -10,4 +10,4 @@ tcorr = readTimeCorr('metro', L, temps, 0, nblock, nsamp, seed)
 
 time = linspace(0,200,200)';
 
-plot(time(1:end),tcorr(1:end,7))
+plot(time(1:end),tcorr(1:end,3))

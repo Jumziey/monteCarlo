@@ -175,21 +175,41 @@ void saveData(Par *par, double* v, double* tcorr)
 
 void timecorr(Par* par, double* vserie, double* tcorr) {
 	int isamp;
-	double vavg = 0.0, v2avg = 0.0, var = 0.0;
+	double vavg = 0.0;
 	
-	for(isamp = 0; isamp < par->nsamp; isamp++) {
+	for(isamp = 0; isamp < par->nsamp; isamp++)
 		vavg += vserie[isamp];
-		v2avg += pow(vserie[isamp],2);
-	}
 	vavg /= par->nsamp;
-	v2avg /= par->nsamp;
 	
-	//var = v2avg-pow(vavg,2);
+	for(isamp = 0; isamp < par->nsamp; isamp++) 
+		vavg += vserie[isamp];
+	vavg /= par->nsamp;
+	
 	for(isamp = 0; isamp < par->nsamp; isamp++)
 		tcorr[isamp] += (vserie[0]-vavg)*(vserie[isamp]-vavg);
 }
-	
 
+void tcorrnorm(Par* par, double* tcorr) {
+	int isamp;
+	double max=0.0, min=0.0;
+	
+	for(isamp = 0; isamp < par->nsamp; isamp++)
+		if(tcorr[isamp] < min)
+			min = tcorr[isamp];
+	
+	for(isamp = 0; isamp < par->nsamp; isamp++) {
+		if(min < 0)
+			tcorr[isamp] -= min; //Yes logic is slightly obfuscated
+		if(tcorr[isamp] > max)
+			max = tcorr[isamp];
+	}
+	
+	for(isamp = 0; isamp < par->nsamp; isamp++)
+		tcorr[isamp] /= max;
+}
+		
+		
+		
 void mc(Par *par, int *spin)
 {
   int i, iblock, isamp, istep, ntherm = par->ntherm;
@@ -248,8 +268,7 @@ void mc(Par *par, int *spin)
   acc = accept * 100.0 / (L2 * (par->nblock) * (par->nsamp));
   printf("\nAcceptance: %5.2f\n", acc);
   
-  for(isamp = 0; isamp < par->nsamp; isamp++)
-  	tcorr[isamp] /= par->nblock;
+  tcorrnorm(par, tcorr);
   
 	saveData(par,vblock, tcorr);
 	free(eserie); free(tcorr);
