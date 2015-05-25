@@ -2,7 +2,7 @@
 
 declare -a temp=("1.8" "2.0" "2.2" "2.3" "2.4" "2.6" "2.8")
 declare -a size=("32")
-nblock=64
+nblock=128
 
 nsamp=200
 

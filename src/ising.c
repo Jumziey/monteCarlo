@@ -120,7 +120,7 @@ void result(Par *par, double *v, int runs, int final)
 
 #define MAXRUNS 10
 #define PARVALS 6
-void saveData(Par *par, double* v, double* tcorr)
+void saveData(Par *par, double* v)
 {
 	int i, isamp;
 	char sysVal[PARVALS][MAXRUNS];
@@ -149,24 +149,13 @@ void saveData(Par *par, double* v, double* tcorr)
 	
 	fp = fopen(filename, "w");
 	fprintf(fp,"%8f %8f %8f\n", v[0], v[1], v[2]);
-	fclose(fp);
-	
-	
-	//Time correlation data
-	filename = strcat(filename, "tcorr");
-	fp = fopen(filename, "w");
-	for(isamp = 0; isamp < par->nsamp; isamp++)
-		fprintf(fp, "%16f ", tcorr[isamp]);
-	fprintf(fp, "\n");
-	fclose(fp);
-	
+	fclose(fp);	
 }
 
 void mc(Par *par, int *spin)
 {
   int i, iblock, isamp, istep, ntherm = par->ntherm;
   double t = par->t, acc, accept = 0.0, L2 = par->L*par->L;
-  double *tcorr;
   double v[3];
   double vsamp[] = {0.0, 0.0, 0.0};
 	double vblock[] = {0.0, 0.0, 0.0};
@@ -188,8 +177,6 @@ void mc(Par *par, int *spin)
   printf("\n energy      cv        magn     \n");
 	
 	
-	//Initialize time correlation vector
-	tcorr = calloc(par->nsamp, sizeof(double));
   //Thermalize the system 
   for (i = 0; i < ntherm; i++)
     update(par, spin);
@@ -203,14 +190,13 @@ void mc(Par *par, int *spin)
       measure(par, v, spin);
       vsamp[0] += v[0]; vsamp[1] += v[1]; vsamp[2] += v[2];
       //For time correlation
-      tcorr[isamp] += v[0];
     }
     write_config(par, spin, fname);
     
     vblock[0] += vsamp[0] / par->nsamp;
     vblock[1] += vsamp[1] / par->nsamp;
     vblock[2] += vsamp[2] / par->nsamp;
-   
+   	
     result(par, vsamp, par->nsamp, 0);
     vsamp[0] = 0; vsamp[1] = 0; vsamp[2] = 0;
   }
@@ -220,30 +206,7 @@ void mc(Par *par, int *spin)
   acc = accept * 100.0 / (L2 * (par->nblock) * (par->nsamp));
   printf("\nAcceptance: %5.2f\n", acc);
   
-  //Averaging the nsamps(or time steps)
-  for(isamp = 0; isamp < par->nsamp; isamp++)
-  	tcorr[isamp] /= (par->nblock*L2);
-  
-  //Calculating time correlation
-  double avg, var;
-  //Variance
-  var = (vblock[2]-pow(vblock[0],2))/L2;
-  //Averaging
-  for(isamp = 0; isamp < par->nsamp; isamp++)
-  	avg += tcorr[isamp];
-  avg /= par->nsamp;
-  printf("avg: %8f\n", avg);
-  printf("eh: %8f\n", fabs(tcorr[0]-avg));
-  //Translation to time correlation
-  for(isamp=1; isamp < par->nsamp; isamp++) {
-  	tcorr[isamp] = fabs(tcorr[0]-avg)*fabs(tcorr[isamp]-avg);
-  	//printf("tcorr[%d] = %8f \n", isamp, tcorr[isamp]);
-  }
-  	
-  
-  
-	saveData(par,vblock, tcorr);
-	free(tcorr);
+	saveData(par,vblock);
 }
 
 int 
