@@ -99,7 +99,7 @@ double measure(Par *par, double *v, int *spin)
  * or per spin
  */
 
-void result(Par *par, double *v, int runs, int final)
+void result(Par *par, double *v, int blocks, int final)
 {
 	int L2;
 	double eSys, mSys, e2Sys;
@@ -107,9 +107,9 @@ void result(Par *par, double *v, int runs, int final)
 	
 	L2 = par->L*par->L;
 	
-	eSys = v[0]/runs;
-	mSys = v[1]/runs;
-	e2Sys = v[2]/runs;
+	eSys = v[0]/blocks;
+	mSys = v[1]/blocks;
+	e2Sys = v[2]/blocks;
 	
 	ePerSpin = eSys/L2;
 	cPerSpin = 1/pow(par->t,2) * (e2Sys - pow(eSys,2))/L2;
@@ -292,21 +292,28 @@ void mc(Par *par, int *spin, int tcorr, int binders)
 		  }
 		  write_config(par, spin, fname);
 		  
-		  vblock[0] += vsamp[0] / par->nsamp;
-		  vblock[1] += vsamp[1] / par->nsamp;
-		  vblock[2] += vsamp[2] / par->nsamp;
+		  vsamp[0] /= par->nsamp;
+		  vsamp[1] /= par->nsamp;
+		  vsamp[2] /= par->nsamp;
+		  
+		  vblock[0] += vsamp[0];
+		  vblock[1] += vsamp[1];
+		  vblock[2] += vsamp[2];
 		  
 		  magblock[0] += magsamp[0]/par->nsamp;
 		  magblock[1] += magsamp[1]/par->nsamp;
 		 	
-		 	timecorr(par->nsamp, eserie, tcorrDat);
-		  result(par, vsamp, par->nsamp, 0);
+		 	timecorr(par->nsamp, eserie, tcorrDat);		 
+		  result(par, vblock, iblock+1, 0);
 		  vsamp[0] = 0; vsamp[1] = 0; vsamp[2] = 0;
 		  magsamp[0] = 0; magsamp[1] = 0;
 		}
 		
-		vblock[0] /= par->nblock; vblock[1] /= par->nblock; vblock[2] /= par->nblock;
-		result(par, vblock, 1, 1);
+		vblock[0] /= par->nblock;
+		vblock[1] /= par->nblock;
+		vblock[2] /= par->nblock;
+		
+	  result(par, vblock, 1, 1);
 		acc = accept * 100.0 / (L2 * (par->nblock) * (par->nsamp));
 		printf("\nAcceptance: %5.2f\n", acc);
 		

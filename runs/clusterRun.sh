@@ -5,7 +5,7 @@ L=64
 nblock=128
 nsamp=1000
 
-
+cd ../Cluster
 commando="./ising L=$L nblock=$nblock nsamp=$nsamp"
 for T in "${temp[@]}"
 do
@@ -44,3 +44,5 @@ do
 done
 echo $commando
 eval $commando
+
+cd ../runs
