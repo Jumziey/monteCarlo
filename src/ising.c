@@ -179,7 +179,7 @@ void saveData(Par *par, double* v, double* tcorr, double* mag)
 	filename[(int)strlen(filename)-5] = '\0'; //removing tcorr
 	strcat(filename, "binders");
 	fp = fopen(filename, "w");
-	fprintf(fp, "%8f \n", mag[0]/mag[1]);
+	fprintf(fp, "%8f %8f \n", mag[0], mag[1]);
 	fclose(fp);
 	printf("Binders data saved to: %s\n", filename);
 	
@@ -305,6 +305,7 @@ void mc(Par *par, int *spin, int tcorr, int binders)
 		 	
 		 	timecorr(par->nsamp, eserie, tcorrDat);		 
 		  result(par, vblock, iblock+1, 0);
+		  
 		  vsamp[0] = 0; vsamp[1] = 0; vsamp[2] = 0;
 		  magsamp[0] = 0; magsamp[1] = 0;
 		}
@@ -313,12 +314,14 @@ void mc(Par *par, int *spin, int tcorr, int binders)
 		vblock[1] /= par->nblock;
 		vblock[2] /= par->nblock;
 		
+		magblock[0] /= par->nblock;
+		magblock[1] /= par->nblock;
+		
+		tcorrnorm(par->nsamp, tcorrDat);
+		
 	  result(par, vblock, 1, 1);
 		acc = accept * 100.0 / (L2 * (par->nblock) * (par->nsamp));
 		printf("\nAcceptance: %5.2f\n", acc);
-		
-		magblock[0] /= par->nblock; magblock[1] /=par->nblock;
-		tcorrnorm(par->nsamp, tcorrDat);
 		
 		saveData(par,vblock, tcorrDat, magblock);
 		free(eserie); free(tcorrDat);
