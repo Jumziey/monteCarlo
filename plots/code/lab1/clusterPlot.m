@@ -42,5 +42,5 @@ legend('64','256', '1024', 'Linear fit', 'Location', 'northwest')
 
 disp(sprintf('BETA = %16f', p(1)));
 
-xlabel('Tc - Temp')
+xlabel('(Tc - Temp) (k)')
 ylabel('|m|')

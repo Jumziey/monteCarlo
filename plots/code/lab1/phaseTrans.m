@@ -3,7 +3,7 @@ close all; clear all;
 %Defining what values to read
 sizes = [8 16 32 64];
 temps = [2 2.1 2.16 2.18 2.2 2.22 2.24 2.25 2.26 2.27 2.28 2.29 2.3 2.32 2.34 2.36 2.38 2.4 2.44 2.48 2.52 2.6 2.7];
-nblock=64;
+nblock=256;
 nsamp=1000;
 seed=0;
 

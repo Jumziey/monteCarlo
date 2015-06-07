@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <time.h>
 #include <math.h>
+#include <unistd.h>
 
 #include "ran.h"
 #include "ising.h"
@@ -126,11 +127,10 @@ void saveData(Par *par, double* v, double* tcorr, double* mag)
 	int i, isamp;
 	char sysVal[PARVALS][MAXRUNS];
 	char *sysValNames[] = {"L","t","ntherm","nblock","nsamp","seed"};
-	char *filename, *orig;
+	char *filename;
 	FILE* fp;
 	
-	filename = calloc(22+MAXRUNS*PARVALS + 5,sizeof(char));
-	orig = calloc(22+MAXRUNS*PARVALS + 5,sizeof(char));
+	filename = calloc(22+MAXRUNS*PARVALS + 7 + 1,sizeof(char));
 	
 	sprintf(sysVal[0], "%d", par->L);
 	sprintf(sysVal[1], "%g", par->t);
@@ -144,7 +144,7 @@ void saveData(Par *par, double* v, double* tcorr, double* mag)
 	for(i=0; i<PARVALS; i++) {
 		strcpy(strtmp,sysValNames[i]);
 		strcat(strtmp,sysVal[i]);
-		filename = strcat(filename,strtmp);
+		strcat(filename,strtmp);
 	}
 	printf("Finalized data saved to: %s\n", filename);
 	
@@ -166,30 +166,83 @@ void saveData(Par *par, double* v, double* tcorr, double* mag)
 	fprintf(fp,"%8f %8f %8f\n", ePerSpin, cPerSpin, mPerSpin);
 	fclose(fp);	
 	
-	//Now we're just appending stuff to save
-	memcpy(orig, filename, (22+MAXRUNS*PARVALS + 5)*sizeof(char));
-	
 	//Save timecorrelation
-	filename = strcat(orig, "tcorr");
+	strcat(filename, "tcorr");
 	fp = fopen(filename, "w");
 	for(isamp = 0; isamp < par->nsamp; isamp++)
 		fprintf(fp, "%16f ", tcorr[isamp]);
 	fprintf(fp,"\n");
 	fclose(fp);
+	printf("Timecorr data saved to: %s\n", filename);
 	
 	//Binder's cumulant
-	filename = strcat(orig, "binders");
+	filename[(int)strlen(filename)-5] = '\0'; //removing tcorr
+	strcat(filename, "binders");
 	fp = fopen(filename, "w");
 	fprintf(fp, "%8f \n", mag[0]/mag[1]);
 	fclose(fp);
+	printf("Binders data saved to: %s\n", filename);
+	
+	free(filename);
 	
 }
+
+/*Returns 1 if data allready exists
+ * 0 if not
+ */
+int dataExists(Par *par, int tcorr, int binders)
+{
+	int i, isamp;
+	char sysVal[PARVALS][MAXRUNS];
+	char *sysValNames[] = {"L","t","ntherm","nblock","nsamp","seed"};
+	char *filename;
+	FILE* fp;
+	
+	filename = calloc(22+MAXRUNS*PARVALS + 7 + 1,sizeof(char));
+	
+	sprintf(sysVal[0], "%d", par->L);
+	sprintf(sysVal[1], "%g", par->t);
+	sprintf(sysVal[2], "%d", par->ntherm);
+	sprintf(sysVal[3], "%d", par->nblock);
+	sprintf(sysVal[4], "%d", par->nsamp);
+	sprintf(sysVal[5], "%d", par->seed);
+	
+	char strtmp[10+MAXRUNS];
+	strcpy(filename,"data/");
+	for(i=0; i<PARVALS; i++) {
+		strcpy(strtmp,sysValNames[i]);
+		strcat(strtmp,sysVal[i]);
+		strcat(filename,strtmp);
+	}
+	if(access(filename,F_OK) != 0)
+		return 0; //File does not exists
+	
+	//Check timecorrelation
+	if(tcorr) {
+		strcat(filename, "tcorr");
+		if(access(filename,F_OK) != 0)
+			return 0;
+	}
+	
+	//Binder's cumulant
+	if(binders) {
+		if(tcorr)
+			filename[(int)strlen(filename)-5] = '\0'; //removing tcorr
+		strcat(filename, "binders");
+		if(access(filename,F_OK) != 0)
+			return 0;
+	}
+	
+	free(filename);
+	return 1;
+}
+	
 		
-void mc(Par *par, int *spin)
+void mc(Par *par, int *spin, int tcorr, int binders)
 {
   int i, iblock, isamp, istep, ntherm = par->ntherm;
   double t = par->t, acc, accept = 0.0, L2 = par->L*par->L;
-  double *tcorr, *eserie;
+  double *tcorrDat, *eserie;
   double v[3];
   double magsamp[] = {0.0, 0.0};
   double magblock[] = {0.0, 0.0};
@@ -216,53 +269,61 @@ void mc(Par *par, int *spin)
   //Thermalize the system 
   for (i = 0; i < ntherm; i++)
     update(par, spin);
-
-	//Allocate arrays for measurement series
-	eserie = malloc(par->nsamp*sizeof(double));
-	tcorr = calloc(par->nsamp, sizeof(double));
-  for (iblock = 0; iblock < par->nblock; iblock++) {
-    for (isamp = 0; isamp < par->nsamp; isamp++) {
-      accept += update(par, spin);
-      measure(par, v, spin);
-      
-      vsamp[0] += v[0]; vsamp[1] += v[1]; vsamp[2] += v[2];
-      
-      eserie[isamp] = v[0];
-      
-      magsamp[0] += pow(v[0],2); magsamp[1] += pow(v[1], 4);
-#ifdef VIS
-			visualize(par->L,spin);
-#endif
-    }
-    write_config(par, spin, fname);
-    
-    vblock[0] += vsamp[0] / par->nsamp;
-    vblock[1] += vsamp[1] / par->nsamp;
-    vblock[2] += vsamp[2] / par->nsamp;
-    
-    magblock[0] += magsamp[0]/par->nsamp;
-    magblock[1] += magsamp[1]/par->nsamp;
-   	
-   	timecorr(par->nsamp, eserie, tcorr);
-    result(par, vsamp, par->nsamp, 0);
-    vsamp[0] = 0; vsamp[1] = 0; vsamp[2] = 0;
-    magsamp[0] = 0; magsamp[1] = 0;
-  }
-  
-	vblock[0] /= par->nblock; vblock[1] /= par->nblock; vblock[2] /= par->nblock;
-	result(par, vblock, 1, 1);
-  acc = accept * 100.0 / (L2 * (par->nblock) * (par->nsamp));
-  printf("\nAcceptance: %5.2f\n", acc);
-  
-  magblock[0] /= par->nblock; magblock[1] /=par->nblock;
-  tcorrnorm(par->nsamp, tcorr);
-  
-	saveData(par,vblock, tcorr, magblock);
-	free(eserie); free(tcorr);
+	
+	//Only run if data does not allrdy exists, to avoid 
+	//extra runs.
+	if(!dataExists(par, tcorr, binders)) {
+		//Allocate arrays for measurement series 
+		eserie = malloc(par->nsamp*sizeof(double));
+		tcorrDat = calloc(par->nsamp, sizeof(double));
+		for (iblock = 0; iblock < par->nblock; iblock++) {
+		  for (isamp = 0; isamp < par->nsamp; isamp++) {
+		    accept += update(par, spin);
+		    measure(par, v, spin);
+		    
+		    vsamp[0] += v[0]; vsamp[1] += v[1]; vsamp[2] += v[2];
+		    
+		    eserie[isamp] = v[0];
+		    
+		    magsamp[0] += pow(v[0],2); magsamp[1] += pow(v[1], 4);
+	#ifdef VIS
+				visualize(par->L,spin);
+	#endif
+		  }
+		  write_config(par, spin, fname);
+		  
+		  vblock[0] += vsamp[0] / par->nsamp;
+		  vblock[1] += vsamp[1] / par->nsamp;
+		  vblock[2] += vsamp[2] / par->nsamp;
+		  
+		  magblock[0] += magsamp[0]/par->nsamp;
+		  magblock[1] += magsamp[1]/par->nsamp;
+		 	
+		 	timecorr(par->nsamp, eserie, tcorrDat);
+		  result(par, vsamp, par->nsamp, 0);
+		  vsamp[0] = 0; vsamp[1] = 0; vsamp[2] = 0;
+		  magsamp[0] = 0; magsamp[1] = 0;
+		}
+		
+		vblock[0] /= par->nblock; vblock[1] /= par->nblock; vblock[2] /= par->nblock;
+		result(par, vblock, 1, 1);
+		acc = accept * 100.0 / (L2 * (par->nblock) * (par->nsamp));
+		printf("\nAcceptance: %5.2f\n", acc);
+		
+		magblock[0] /= par->nblock; magblock[1] /=par->nblock;
+		tcorrnorm(par->nsamp, tcorrDat);
+		
+		saveData(par,vblock, tcorrDat, magblock);
+		free(eserie); free(tcorrDat);
+	} else {
+		printf("\n===================================\n");
+		printf("data allready exists... Skipping...\n");
+		printf("===================================\n\n");
+	}
 }
 
 int 
-initialize_mc(Par *par, int *spin) {
+initialize_mc(Par *par, int *spin, int tcorr, int binders) {
   int i,j, L2 = par->L * par->L;
   char *f2;
 
@@ -277,7 +338,7 @@ initialize_mc(Par *par, int *spin) {
 
   sprintf(fname, "%3.3d_%5.3f", par->L, par->t);
 
-  mc(par, spin);
+  mc(par, spin, tcorr, binders);
 
   return 1;
 }
@@ -286,10 +347,11 @@ int read_args(Par *par, char *arg)
 {
   int st;
   static int *spin = NULL;
+  static int binders = 0, tcorr = 0;
   char *s;
 
   if (!strcmp(arg, "run")) {
-    if(initialize_mc(par, spin)) {
+    if(initialize_mc(par, spin, tcorr, binders)) {
     	return 1;
     } else {
     	return 0;
@@ -348,6 +410,16 @@ int read_args(Par *par, char *arg)
   if (!strcmp(arg, "read")) {
     return read_config(par, spin, s);
   }
+  
+  if (!strcmp(arg, "binders")) {
+  	binders = strtol(s, NULL, 0);
+  	return 1;
+  }
+  
+  if (!strcmp(arg, "tcorr")) {
+  	tcorr = strtol(s, NULL, 0);
+  	return 1;
+  }
 
   fprintf(stderr, "No such variable name: '%s'.\n", arg);
   return 0;
@@ -361,6 +433,7 @@ main(int argc, char *argv[])
   
   par->nsamp = 1;
   par->nblock = 1;
+  par->seed = 0;
 
   if (argc == 1) {
     printf("Usage: %s L=16 T=2.26\n", argv[0]);

@@ -53,11 +53,11 @@ for i = 1:2
 end
 
 figure(2)
-for i = 5
+for i = 4
 	semilogy(time(1:100),tcorr(1:100,i))
 	hold on
 end
 
-title('Time Correlation - Wolff Cluster, T=2.4')
+title('Time Correlation - Wolff Cluster, T=2.3')
 xlabel('Time - update')
 ylabel('Normalized Correlation to t_0')
