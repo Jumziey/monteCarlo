@@ -273,7 +273,7 @@ void mc(Par *par, int *spin, int tcorr, int binders)
 	
 	//Only run if data does not allrdy exists, to avoid 
 	//extra runs.
-	//if(!dataExists(par, tcorr, binders)) {
+	if(!dataExists(par, tcorr, binders)) {
 		//Allocate arrays for measurement series 
 		eserie = malloc(par->nsamp*sizeof(double));
 		tcorrDat = calloc(par->nsamp, sizeof(double));
@@ -328,11 +328,11 @@ void mc(Par *par, int *spin, int tcorr, int binders)
 		
 		saveData(par,vblock, tcorrDat, magblock);
 		free(eserie); free(tcorrDat);
-/*	} else {
+	} else {
 		printf("\n===================================\n");
 		printf("data allready exists... Skipping...\n");
 		printf("===================================\n\n");
-	}*/
+	}
 }
 
 int 
