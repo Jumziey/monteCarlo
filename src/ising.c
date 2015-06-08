@@ -179,7 +179,8 @@ void saveData(Par *par, double* v, double* tcorr, double* mag)
 	filename[(int)strlen(filename)-5] = '\0'; //removing tcorr
 	strcat(filename, "binders");
 	fp = fopen(filename, "w");
-	fprintf(fp, "%8f %8f \n", mag[0], mag[1]);
+	printf("magblock test: %8f    %8f\n",mag[0]/pow(L2,2),mag[1]/pow(L2,4));
+	fprintf(fp, "%8f %8f \n", mag[0]/pow(L2,2), mag[1]/pow(L2,4));
 	fclose(fp);
 	printf("Binders data saved to: %s\n", filename);
 	
@@ -272,7 +273,7 @@ void mc(Par *par, int *spin, int tcorr, int binders)
 	
 	//Only run if data does not allrdy exists, to avoid 
 	//extra runs.
-	if(!dataExists(par, tcorr, binders)) {
+	//if(!dataExists(par, tcorr, binders)) {
 		//Allocate arrays for measurement series 
 		eserie = malloc(par->nsamp*sizeof(double));
 		tcorrDat = calloc(par->nsamp, sizeof(double));
@@ -285,7 +286,7 @@ void mc(Par *par, int *spin, int tcorr, int binders)
 		    
 		    eserie[isamp] = v[0];
 		    
-		    magsamp[0] += pow(v[0],2); magsamp[1] += pow(v[1], 4);
+		    magsamp[0] += pow(v[1],2); magsamp[1] += pow(v[1],4);
 	#ifdef VIS
 				visualize(par->L,spin);
 	#endif
@@ -300,8 +301,10 @@ void mc(Par *par, int *spin, int tcorr, int binders)
 		  vblock[1] += vsamp[1];
 		  vblock[2] += vsamp[2];
 		  
-		  magblock[0] += magsamp[0]/par->nsamp;
-		  magblock[1] += magsamp[1]/par->nsamp;
+		  magsamp[0] /= par->nsamp;
+		  magsamp[1] /= par->nsamp;
+		  magblock[0] += magsamp[0];
+		  magblock[1] += magsamp[1];
 		 	
 		 	timecorr(par->nsamp, eserie, tcorrDat);		 
 		  result(par, vblock, iblock+1, 0);
@@ -325,11 +328,11 @@ void mc(Par *par, int *spin, int tcorr, int binders)
 		
 		saveData(par,vblock, tcorrDat, magblock);
 		free(eserie); free(tcorrDat);
-	} else {
+/*	} else {
 		printf("\n===================================\n");
 		printf("data allready exists... Skipping...\n");
 		printf("===================================\n\n");
-	}
+	}*/
 }
 
 int 
