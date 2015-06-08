@@ -3,10 +3,12 @@ CC = gcc
 CFLAGS  = -g -O2
 LOADLIBES = -lm
 
-
-OBJS = sandpile.o
+INCLUDES = ran.h
+OBJS = sandpile.o ran.o
 
 sandpile: ${OBJS}
+
+${OBJS}: ${INCLUDES}
 
 clean:
 	rm *.o sandpile

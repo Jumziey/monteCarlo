@@ -16,6 +16,8 @@
 #include <ctype.h>
 #include <unistd.h>
 
+#include "ran.h"
+
 void
 error(char *err)
 {
@@ -23,10 +25,54 @@ error(char *err)
 	exit(1);
 }
 
+void
+addgrain(int* sandpile, int size)
+{
+	sandpile[iran()%size]++;
+}
+
+#define REALL 5
+int
+checkZcr(int* sandpile, int size, int *pos)
+{
+	int i;
+	int numZcr = 0, k = 0;
+	
+	pos = malloc(REALL*sizeof(int));
+	
+	for(i=0; i<size; i++) {
+		if(sandpile[i] >= 4) {
+			numZcr++;
+			if(numZcr%REALL == 0)
+				pos = realloc(pos, numZcr+REALL);
+			pos[k] = i;
+		}
+	}
+	return 0;
+}
+
+
+void
+avalanche(int* sandpile, int size)
+{
+	int i,start, numZcr;
+	int *pos;
+	
+	numZcr = 0;
+	for(i=0; numZcr==0; i++) {
+		addgrain(sandpile, size);
+		numZcr = checkZcr(sandpile, size, pos);
+	}
+	printf("we had to add %d grains before an avalanche\n",i);
+	printf("We reached Zcr %d times\n", numZcr);
+	free(pos);
+}
+
 int
 main(int argc, char **argv) 
 {
-	int opt,L,a;
+	int opt,L,L2,a;
+	int *sandpile;
 	char *check;
 	L = 0; a = 0;
 	
@@ -50,7 +96,13 @@ main(int argc, char **argv)
 				fprintf(stderr, "we shouldnt be here\n");
 		}
 	}
+	init_ran(0);
 	
-	printf("L: %d, a: %d\n", L, a);
+	L2 = L*L;
+	sandpile = calloc(L2, sizeof(int));
+	
+	avalanche(sandpile, L2);
+	
+	free(sandpile);
 	return 0;
 }

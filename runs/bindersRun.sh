@@ -7,7 +7,7 @@ declare -a size=("16" "32" "64" "128" "256")
 nsamp=1000;
 binders=1;
 tcorr=1;
-nblock=64;
+nblock=256;
 
 commando="./ising"
 for L in "${size[@]}"

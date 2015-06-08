@@ -10,6 +10,7 @@ seed = 0;
 
 t = temps-tc;
 
+
 for L = sizes;
 	vec = t*L;
 

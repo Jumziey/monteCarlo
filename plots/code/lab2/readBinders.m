@@ -37,7 +37,7 @@ function mag = readData(update, sizes, temps, ntherm, nblock, nsamp, seed)
 			m4 = [m4 tmp(2)];
 			filename = '';
 		end
-		mag = [allRuns m2' m4'];
+		mag = [mag m2' m4'];
 		m2 = [];
 		m4 = [];
 	end
