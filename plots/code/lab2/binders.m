@@ -19,12 +19,24 @@ for i=1:size(mag,2)/2
 	b(:,i) = mag(:,i*2-1).^2./mag(:,i*2);
 end
 
+
 plotstyle = {'x-' 'd-' 'o-' 's-' '+-'};
 for i=1:length(sizes)
 	hold on
 	plot(temps,b(:,i), char(plotstyle(i)))
 end
+ylabel('Q_L')
+xlabel('T')
+title('Binders Cumulant vs Temp')
 
+figure(2)
+for i=1:length(sizes)
+	hold on
+	plot(t*sizes(i),b(:,i), char(plotstyle(i)))
+end
+ylabel('Q_L')
+xlabel('(T-T_C)*L^{1/\nu}')
+title('Binders Cumulant vs Scaled temp length')
 
 
 

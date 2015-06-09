@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include <ctype.h>
 #include <unistd.h>
 
@@ -38,42 +39,81 @@ checkZcr(int* sandpile, int size, int *pos)
 	int i;
 	int numZcr = 0, k = 0;
 	
-	pos = malloc(REALL*sizeof(int));
-	
 	for(i=0; i<size; i++) {
 		if(sandpile[i] >= 4) {
 			numZcr++;
-			if(numZcr%REALL == 0)
-				pos = realloc(pos, numZcr+REALL);
-			pos[k] = i;
+			pos[k++] = i;
 		}
 	}
-	return 0;
+	return numZcr;
+}
+
+
+/* Here we treat the borders as sand
+ * Flowing outside the boundary.
+ */
+void
+distribute(int* sandpile, int size, int* pos, int numZcr)
+{
+	int i;
+	int L;
+	
+	L = (int)sqrt(size);
+	
+	for(i=0; i<numZcr; i++) {
+		sandpile[pos[i]] -= 4;
+		//right
+		if(!(pos[i]%L==(L-1)))
+			sandpile[pos[i]+1]++;
+		//left
+		if(pos[i]%L)
+			sandpile[pos[i]-1]++;
+		//above
+		if(pos[i]>=L)
+			sandpile[pos[i]-L]++;
+		//below
+		if(pos[i]<L*(L-1))
+			sandpile[pos[i]+L]++;
+	}
 }
 
 
 void
-avalanche(int* sandpile, int size)
+avalanche(int size, double* S, double* t)
 {
 	int i,start, numZcr;
-	int *pos;
+	int *pos, *sandpile;
 	
+	sandpile = calloc(size,sizeof(int));
+	pos = malloc(size*sizeof(int));
+	
+	//Add grains until avalanche start
 	numZcr = 0;
 	for(i=0; numZcr==0; i++) {
 		addgrain(sandpile, size);
 		numZcr = checkZcr(sandpile, size, pos);
 	}
-	printf("we had to add %d grains before an avalanche\n",i);
-	printf("We reached Zcr %d times\n", numZcr);
+	*S += numZcr;
+	
+	for(i=0; numZcr != 0; i++) {
+		distribute(sandpile, size, pos, numZcr);
+		numZcr = checkZcr(sandpile, size, pos);
+		*S += numZcr;
+	}
+	
+	*t += i;
 	free(pos);
+	free(sandpile);
 }
 
 int
 main(int argc, char **argv) 
 {
-	int opt,L,L2,a;
-	int *sandpile;
+	int opt,L,L2,a,i;
 	char *check;
+	char filename[150], lval[50], aval[50];
+	FILE* fp;
+	
 	L = 0; a = 0;
 	
 	while((opt=getopt(argc,argv,"L:a:")) != -1) {
@@ -96,13 +136,29 @@ main(int argc, char **argv)
 				fprintf(stderr, "we shouldnt be here\n");
 		}
 	}
-	init_ran(0);
-	
+
 	L2 = L*L;
-	sandpile = calloc(L2, sizeof(int));
 	
-	avalanche(sandpile, L2);
+	sprintf(lval, "%d", L);
+	sprintf(aval, "%d", a);
+	strcat(filename, "data/");
+	strcat(filename, "L");
+	strcat(filename, lval);
+	strcat(filename, "a");
+	strcat(filename, aval);
+	printf("filename: %s\n", filename);
 	
-	free(sandpile);
+	fp = fopen(filename, "w");
+	
+	double S=0.0,t=0.0;
+	int pS, pt;
+	init_ran(0);
+	for(i=0; i<a; i++) {
+		pS = S; pt = t;
+		avalanche(L2, &S, &t);
+		fprintf(fp, "%f %f\n",S, t);
+		S = 0; t = 0;
+	}
+	fclose(fp);
 	return 0;
 }

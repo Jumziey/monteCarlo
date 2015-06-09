@@ -139,12 +139,10 @@ void saveData(Par *par, double* v, double* tcorr, double* mag)
 	sprintf(sysVal[4], "%d", par->nsamp);
 	sprintf(sysVal[5], "%d", par->seed);
 	
-	char strtmp[10+MAXRUNS];
 	strcpy(filename,"data/");
 	for(i=0; i<PARVALS; i++) {
-		strcpy(strtmp,sysValNames[i]);
-		strcat(strtmp,sysVal[i]);
-		strcat(filename,strtmp);
+		strcpy(filename,sysValNames[i]);
+		strcat(filename,sysVal[i]);
 	}
 	printf("Finalized data saved to: %s\n", filename);
 	
@@ -171,7 +169,7 @@ void saveData(Par *par, double* v, double* tcorr, double* mag)
 	fp = fopen(filename, "w");
 	for(isamp = 0; isamp < par->nsamp; isamp++)
 		fprintf(fp, "%16f ", tcorr[isamp]);
-	fprintf(fp,"\n");
+	fprintf(fp,"\n");d
 	fclose(fp);
 	printf("Timecorr data saved to: %s\n", filename);
 	
