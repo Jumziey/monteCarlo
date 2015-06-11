@@ -32,7 +32,6 @@ addgrain(int* sandpile, int size)
 	sandpile[iran()%size]++;
 }
 
-#define REALL 5
 int
 checkZcr(int* sandpile, int size, int *pos)
 {
@@ -48,18 +47,14 @@ checkZcr(int* sandpile, int size, int *pos)
 	return numZcr;
 }
 
-
-/* Here we treat the borders as sand
- * Flowing outside the boundary.
- */
 void
-distribute(int* sandpile, int size, int* pos, int numZcr)
+distribute(int* sandpile, int L, int* pos, int numZcr)
 {
 	int i;
-	int L;
-	
-	L = (int)sqrt(size);
-	
+
+	/* Here we treat the borders as sand
+	 * Flowing outside the boundary and dissapearing.
+	 */
 	for(i=0; i<numZcr; i++) {
 		sandpile[pos[i]] -= 4;
 		//right
@@ -79,42 +74,58 @@ distribute(int* sandpile, int size, int* pos, int numZcr)
 
 
 void
-avalanche(int size, double* S, double* t)
+avalanche(int* sandpile, int L, int* S, int* t)
 {
-	int i,start, numZcr;
-	int *pos, *sandpile;
+	int i,start, numZcr, L2;
+	int *pos;
 	
-	sandpile = calloc(size,sizeof(int));
-	pos = malloc(size*sizeof(int));
+	L2 = L*L;
+	pos = malloc(L2*sizeof(int));
 	
 	//Add grains until avalanche start
 	numZcr = 0;
 	for(i=0; numZcr==0; i++) {
-		addgrain(sandpile, size);
-		numZcr = checkZcr(sandpile, size, pos);
+		addgrain(sandpile, L2);
+		numZcr = checkZcr(sandpile, L2, pos);
 	}
 	*S += numZcr;
-	
-	for(i=0; numZcr != 0; i++) {
-		distribute(sandpile, size, pos, numZcr);
-		numZcr = checkZcr(sandpile, size, pos);
+	//There is a minescule chance for infinity
+	//loop if addgrain is to well distributed.
+	//Thus the large limit of 1000.
+	for(i=0; numZcr != 0 || i>1000; i++) {
+		distribute(sandpile, L, pos, numZcr);
+		numZcr = checkZcr(sandpile, L2, pos);
 		*S += numZcr;
 	}
 	
 	*t += i;
 	free(pos);
-	free(sandpile);
+}
+
+double
+sumpile(int *sandpile, int L)
+{
+	int i;
+	double sum = 0.0;
+	
+	for(i=0; i<L*L; i++)
+		sum += sandpile[i];
+	
+	return sum;
 }
 
 int
 main(int argc, char **argv) 
 {
-	int opt,L,L2,a,i;
+	int opt,L,L2,a,i,init;
+	int *sandpile;
+	int S=0,t=0;
 	char *check;
-	char filename[150], lval[50], aval[50];
+	char *filename, lval[50], aval[50], ival[50];
 	FILE* fp;
 	
 	L = 0; a = 0;
+	filename = calloc(200, sizeof(char));
 	
 	while((opt=getopt(argc,argv,"L:a:")) != -1) {
 		switch(opt) {
@@ -136,11 +147,36 @@ main(int argc, char **argv)
 				fprintf(stderr, "we shouldnt be here\n");
 		}
 	}
+	init_ran(0);
 
-	L2 = L*L;
+	
+	sandpile = calloc(L*L,sizeof(int));
+	
+	//Trying to get critical density
+	//To create less of a skew in data
+	double max = L*L*4;
+	double sum = 0.0;
+	
+	//we wanna reach above 52% occupation
+	//According to testing...
+	for(i=0; (sum/max) < 0.52; i++) {
+		avalanche(sandpile, L, &S, &t);
+		sum = sumpile(sandpile, L);
+		if(i%10 == 0)
+			printf("sum/max = %8f\n", sum/max);
+	}
+#ifdef VIS
+		visInit();
+		visualize(sandpile,L);
+#endif
+	printf("Runs before 52%% occupation: %d\n", i);
+
+	
+	S=0; t=0;
 	
 	sprintf(lval, "%d", L);
 	sprintf(aval, "%d", a);
+	sprintf(ival, "%d", init);
 	strcat(filename, "data/");
 	strcat(filename, "L");
 	strcat(filename, lval);
@@ -150,15 +186,19 @@ main(int argc, char **argv)
 	
 	fp = fopen(filename, "w");
 	
-	double S=0.0,t=0.0;
-	int pS, pt;
-	init_ran(0);
+	sleep(2);
 	for(i=0; i<a; i++) {
-		pS = S; pt = t;
-		avalanche(L2, &S, &t);
-		fprintf(fp, "%f %f\n",S, t);
+		avalanche(sandpile, L, &S, &t);
+#ifdef VIS
+		visualize(sandpile, L);
+#endif
+		fprintf(fp, "%d %d\n",S, t);
 		S = 0; t = 0;
 	}
+#ifdef VIS
+		visClose();
+#endif
 	fclose(fp);
+	free(filename);
 	return 0;
 }

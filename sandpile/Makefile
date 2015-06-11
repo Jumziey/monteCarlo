@@ -1,10 +1,10 @@
 CC = gcc
-#CPPFLAGS =
+#CPPFLAGS = -DVIS
 CFLAGS  = -g -O2
-LOADLIBES = -lm
+LOADLIBES = -lm -lg2
 
-INCLUDES = ran.h
-OBJS = sandpile.o ran.o
+INCLUDES = ran.h visualize.h
+OBJS = sandpile.o ran.o visualize.o
 
 sandpile: ${OBJS}
 
