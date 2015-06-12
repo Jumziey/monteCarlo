@@ -58,7 +58,7 @@ distribute(int* sandpile, int L, int* pos, int numZcr)
 	for(i=0; i<numZcr; i++) {
 		sandpile[pos[i]] -= 4;
 		//right
-		if(!(pos[i]%L==(L-1)))
+		if( !(pos[i]%L==(L-1)) )
 			sandpile[pos[i]+1]++;
 		//left
 		if(pos[i]%L)
@@ -67,7 +67,7 @@ distribute(int* sandpile, int L, int* pos, int numZcr)
 		if(pos[i]>=L)
 			sandpile[pos[i]-L]++;
 		//below
-		if(pos[i]<L*(L-1))
+		if(pos[i]<(L*(L-1)))
 			sandpile[pos[i]+L]++;
 	}
 }
@@ -92,10 +92,14 @@ avalanche(int* sandpile, int L, int* S, int* t)
 	//There is a minescule chance for infinity
 	//loop if addgrain is to well distributed.
 	//Thus the large limit of 1000.
-	for(i=0; numZcr != 0 || i>1000; i++) {
+	for(i=0; numZcr != 0; i++) {
 		distribute(sandpile, L, pos, numZcr);
 		numZcr = checkZcr(sandpile, L2, pos);
 		*S += numZcr;
+	}
+	if(i==1000) {
+		fprintf(stderr,"ERRROR ERRROR\n");
+		exit(1);
 	}
 	
 	*t += i;
