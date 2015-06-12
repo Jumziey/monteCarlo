@@ -194,6 +194,8 @@ main(int argc, char **argv)
 #endif
 		fprintf(fp, "%d %d\n",S, t);
 		S = 0; t = 0;
+		if(i%100 == 0)
+			printf("Run %d executed\n", i);
 	}
 #ifdef VIS
 		visClose();
