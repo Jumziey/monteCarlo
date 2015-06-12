@@ -97,11 +97,7 @@ avalanche(int* sandpile, int L, int* S, int* t)
 		numZcr = checkZcr(sandpile, L2, pos);
 		*S += numZcr;
 	}
-	if(i==1000) {
-		fprintf(stderr,"ERRROR ERRROR\n");
-		exit(1);
-	}
-	
+
 	*t += i;
 	free(pos);
 }
