@@ -169,7 +169,7 @@ void saveData(Par *par, double* v, double* tcorr, double* mag)
 	fp = fopen(filename, "w");
 	for(isamp = 0; isamp < par->nsamp; isamp++)
 		fprintf(fp, "%16f ", tcorr[isamp]);
-	fprintf(fp,"\n");d
+	fprintf(fp,"\n");
 	fclose(fp);
 	printf("Timecorr data saved to: %s\n", filename);
 	
