@@ -115,7 +115,6 @@ void saveData(Par *par, double* v, double* tcorr, double* mag, int saveTcorr, in
 	}
 	
 	freeDataFilenames(fnames);
-	
 }
 
 /*Returns 1 if data allready exists
@@ -133,27 +132,27 @@ int dataExists(Par *par, int checkTcorr, int checkBinders)
 	
 	//main file
 	if(access(fnames[0],F_OK) != 0) {
-		printf("FILE DOES NOT EXIST, %s", fnames[i]);
+		printf("FILE DOES NOT EXIST, %s\n", fnames[0]);
 		return 0; //File does not exists
 	}
-	printf("FILE EXISTS: %s\n", fnames[i]);
+	printf("FILE EXISTS: %s\n", fnames[0]);
 	
 	//tcorr file
 	if(checkTcorr) {
 		if(access(fnames[1],F_OK) != 0) {
-			printf("FILE DOES NOT EXIST, %s", fnames[i]);
+			printf("FILE DOES NOT EXIST, %s\n", fnames[1]);
 			return 0; //File does not exists
 		}
-		printf("FILE EXISTS: %s\n", fnames[i]);
+		printf("FILE EXISTS: %s\n", fnames[1]);
 	}
 
 	//binders file
 	if(checkBinders) {
 		if(access(fnames[2],F_OK) != 0) {
-			printf("FILE DOES NOT EXIST, %s", fnames[i]);
+			printf("FILE DOES NOT EXIST, %s\n", fnames[2]);
 			return 0; //File does not exists
 		}
-		printf("FILE EXISTS: %s\n", fnames[i]);
+		printf("FILE EXISTS: %s\n", fnames[2]);
 	}
 
 	freeDataFilenames(fnames);
