@@ -263,7 +263,7 @@
   "document.dvi"
   "document.aux"
   "document.log"
-["pdflatex"] 1498480262 "document.tex" "document.pdf" "document" 1498480263
+["pdflatex"] 1498480544 "document.tex" "document.pdf" "document" 1498480545
   "/etc/texmf/web2c/texmf.cnf" 1486303255 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/home/jumzi/.texlive2016/texmf-var/web2c/pdftex/pdflatex.fmt" 1477392601 3870164 e4dfbfad9d451fab16a679c4971b767d ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1272929888 3287 e6b82fe08f5336d4d5ebc73fb1152e87 ""
@@ -541,9 +541,9 @@
   "/usr/share/texmf/tex/latex/lm/t1lmr.fd" 1458831634 1865 afbfccbe7fda9c2dc5078ad7c486bbed ""
   "/usr/share/texmf/web2c/texmf.cnf" 1488610416 31340 0f53f8665296bf8fe6c697f9505e31d8 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1493396209 2044936 0edf5ca64352b50b145b46ea2ee03d92 ""
-  "document.aux" 1498480263 3475 09345028328cd5a74362ab408e941bd8 ""
-  "document.out" 1498480263 143 c46529b407d7f3ef6df72d4e0eb26914 ""
-  "document.tex" 1498480261 3086 69256adad828c50a0a2f320410f3319e ""
+  "document.aux" 1498480545 3475 09345028328cd5a74362ab408e941bd8 ""
+  "document.out" 1498480545 143 c46529b407d7f3ef6df72d4e0eb26914 ""
+  "document.tex" 1498480544 3092 9f629d1106395851222b7d07f0a19f00 ""
   "figures/cumulant.eps" 1498478589 30567 d6be97f21996a5ffe912baaf13859415 ""
   "figures/cumulant.generated.pdf" 1498478924 10890 8736293dc971bbeac378cd2f344ff819 ""
   "figures/error.eps" 1498478589 45776 5bdd601a735f1624e23a4cabcd82f37b ""
