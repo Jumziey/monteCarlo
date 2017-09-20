@@ -268,7 +268,7 @@ int read_args(Par *par, char *arg)
     int i, L2;
     par->L = strtod(s, NULL);
     L2 = par->L * par->L;
-    spin = realloc(spin, L2 * sizeof(int));
+    spin = calloc(sizeof(int), L2);
     for (i = 0; i < L2; i++)
       spin[i] = 1;
 #ifdef CLU
