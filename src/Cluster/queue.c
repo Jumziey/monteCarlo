@@ -1,5 +1,5 @@
 /*
- * Implementation of lifo queue 
+ * Implementation of fifo queue 
  * with integers
  */
 #include <stdbool.h>
@@ -9,18 +9,38 @@
 #include "queue.h"
 
 void queueAdd(queue *q, int elem){
-	q->arr[q->count] = elem;
+	if(q->count >= q->size) {
+		 printf("queue overflow\n");
+		 exit(1);
+	}
 	q->count++;
+
+	q->arr[q->rear] = elem;
+	if(q->rear == (q->size-1))
+		q->rear = 0;
+	else 
+		q->rear++;
 }
+
 int queuePop(queue *q) {
+	if(q->count <= 0) {
+		printf("queue underflow\n");
+		exit(1);
+	}
 	q->count--;
-	return q->arr[q->count];
+
+	if(q->front == (q->size-1)) {
+		q->front = 0;
+		return q->arr[q->size-1];
+	}
+	return q->arr[q->front++];
 }
 
 queue* queueCreate(int size) {
 	queue *q = malloc(sizeof(queue)*1);
 	q->arr = malloc(sizeof(int)*size);
-	q->count = 0;
+	q->front = q->rear = q->count = 0;
+	q->size = size;
 	return q;
 }
 
@@ -30,7 +50,7 @@ void queueDestroy(queue *q){
 }
 
 bool queueIsEmpty(queue* q) {
-	if(q->count == 0) 
+	if((q->front - q->rear)== 0) 
 		return true;
 	return false;
 }

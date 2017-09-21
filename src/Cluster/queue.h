@@ -1,11 +1,14 @@
 /*
- * Implementation of lifo queue 
+ * Implementation of fifo queue 
  * with integers
  */
 
 typedef struct queue{
 	int* arr;
+	int rear;
+	int front;
 	int count;
+	int size;
 } queue;
 
 void queueAdd(queue*, int);
