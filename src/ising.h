@@ -23,7 +23,11 @@ double energyDiff(int eDiff);
 double spinEnergy(Par *par, int ind, int *spin);
 
 //Defined for the spin matrix, using periodic boundaries
-#define ABOVE(ind,L) ((ind-(L-1)) <= 0) 			? (L*L-1+(ind-(L-1))) : (ind-L)
-#define BELOW(ind,L) ((ind+(L-1)) >= (L*L-1)) ? ((ind+(L-1))-(L*L-1)) : (ind+L)
-#define RIGHT(ind,L) (ind == L*L-1) 					? 0 : (ind+1)
-#define LEFT(ind,L)  (ind == 0) 							? (L*L-1) :  (ind-1)
+//
+#define ABOVE(ind,L) ((ind-L) < 0) 						? ( L*(L-1)+ind ) : ( ind-L )
+
+#define BELOW(ind,L) ((ind+L) >= L*L)       	? (ind%L) 				: (ind+L)
+
+#define RIGHT(ind,L) ((ind+1)%L == 0) 				? ind-(L-1) 			: (ind+1)
+
+#define LEFT(ind,L)  (ind%L == 0) 						? ( ind+(L-1) ) 	: (ind-1)
