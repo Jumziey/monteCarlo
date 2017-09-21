@@ -9,7 +9,7 @@ declare -a size=("16" "32" "64" "128" "256")
 
 nsamp=1000;
 binders=1;
-nblock=64;
+nblock=16;
 
 commando="./cluster"
 for L in "${size[@]}"
