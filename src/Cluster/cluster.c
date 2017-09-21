@@ -34,19 +34,19 @@ int update(Par* par, int* spin) {
 	prob = 1.0-exp(-2.0/par->t);
 	//Repeat as long the queue is non-empty
 	for(;!queueIsEmpty(q);pos = queuePop(q)) {
-		if(clusterAdd(spin, spin[ABOVE(pos,par->L)], state, prob)) {
+		if(clusterAdd(spin, ABOVE(pos,par->L), state, prob)) {
 			queueAdd(q, ABOVE(pos,par->L));
 			acc++;
 		}
-		if(clusterAdd(spin, spin[BELOW(pos,par->L)], state, prob)) {
+		if(clusterAdd(spin, BELOW(pos,par->L), state, prob)) {
 			queueAdd(q, BELOW(pos,par->L));
 			acc++;
 		}
-		if(clusterAdd(spin, spin[RIGHT(pos,par->L)], state, prob)) {
+		if(clusterAdd(spin, RIGHT(pos,par->L), state, prob)) {
 			queueAdd(q, RIGHT(pos,par->L));
 			acc++;
 		}
-		if(clusterAdd(spin, spin[LEFT(pos,par->L)], state, prob)) {
+		if(clusterAdd(spin, LEFT(pos,par->L), state, prob)) {
 			queueAdd(q, LEFT(pos,par->L));
 			acc++;
 		}
