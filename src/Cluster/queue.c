@@ -50,7 +50,7 @@ void queueDestroy(queue *q){
 }
 
 bool queueIsEmpty(queue* q) {
-	if((q->front - q->rear)== 0) 
+	if(q->count == 0) 
 		return true;
 	return false;
 }

@@ -2,10 +2,44 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 #include "../ising.h"
 #include "../ran.h"
 #include "queue.h"
+
+static inline 
+int 
+abovef(int pos, int L) {
+	if(pos < L) {
+		return ((L*(L-1))+pos);
+	}
+	return (pos-L);
+}
+static inline
+int
+belowf(int pos, int L) {
+	if((pos+L) >= (L*L)) {
+		return pos%L;
+	}
+	return pos+L;
+}
+static inline
+int
+rightf(int pos, int L) {
+	if( ((pos+1)%L) == 0 ) {
+		return pos-(L-1);
+	}
+	return pos+1;
+}
+static inline
+int
+leftf(int pos, int L) {
+	if( pos%L == 0 ) {
+		return pos+(L-1);
+	}
+	return pos-1;
+}
 
 
 bool clusterAdd(int spin[], int neighbour , int startState, double prob){
@@ -18,7 +52,7 @@ bool clusterAdd(int spin[], int neighbour , int startState, double prob){
 
 int update(Par* par, int* spin) {
 
-	int state, size,acc,pos;
+	int state,size,acc,pos;
 	double prob;
 	
 	acc = 0;
@@ -33,21 +67,22 @@ int update(Par* par, int* spin) {
 
 	prob = 1.0-exp(-2.0/par->t);
 	//Repeat as long the queue is non-empty
-	for(;!queueIsEmpty(q);pos = queuePop(q)) {
-		if(clusterAdd(spin, ABOVE(pos,par->L), state, prob)) {
-			queueAdd(q, ABOVE(pos,par->L));
+	while(!queueIsEmpty(q)){ 
+		pos = queuePop(q);
+		if(clusterAdd(spin, abovef(pos,par->L), state, prob)) {
+			queueAdd(q, abovef(pos,par->L));
 			acc++;
 		}
-		if(clusterAdd(spin, BELOW(pos,par->L), state, prob)) {
-			queueAdd(q, BELOW(pos,par->L));
+		if(clusterAdd(spin, belowf(pos,par->L), state, prob)) {
+			queueAdd(q, belowf(pos,par->L));
 			acc++;
 		}
-		if(clusterAdd(spin, RIGHT(pos,par->L), state, prob)) {
-			queueAdd(q, RIGHT(pos,par->L));
+		if(clusterAdd(spin, rightf(pos,par->L), state, prob)) {
+			queueAdd(q, rightf(pos,par->L));
 			acc++;
 		}
-		if(clusterAdd(spin, LEFT(pos,par->L), state, prob)) {
-			queueAdd(q, LEFT(pos,par->L));
+		if(clusterAdd(spin, leftf(pos,par->L), state, prob)) {
+			queueAdd(q, leftf(pos,par->L));
 			acc++;
 		}
 	}
