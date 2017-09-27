@@ -8,7 +8,7 @@ import plot
 systems =[
         {
             'length': 32, 
-            'marker': "gs", 
+            'marker': "g*", 
             'cutoff': 3e2,
         },
         {
@@ -43,8 +43,8 @@ plt.ylabel("Number of occurances")
 plt.xlabel("Avalanche Size")
 plt.title("Avalanche sizes in a sandpile\n of different sizes")
 plt.tight_layout()
-plt.ylim(10, np.power(10,5))
-plt.xlim(100,np.power(10,5))
+plt.ylim(10, 1e5)
+plt.xlim(100,1e5)
 
 plt.savefig("../report/figures/sizes.svg")
 plt.show()
