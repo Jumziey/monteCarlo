@@ -17,6 +17,11 @@
 #include <ctype.h>
 #include <unistd.h>
 
+#ifdef VIS
+	#include "visualize.h"	
+#endif
+
+
 #include "ran.h"
 
 void
@@ -177,7 +182,7 @@ main(int argc, char **argv)
 	sprintf(lval, "%d", L);
 	sprintf(aval, "%d", a);
 	sprintf(ival, "%d", init);
-	strcat(filename, "data/");
+	strcat(filename, "./../data/");
 	strcat(filename, "L");
 	strcat(filename, lval);
 	strcat(filename, "a");
@@ -185,6 +190,7 @@ main(int argc, char **argv)
 	printf("filename: %s\n", filename);
 	
 	fp = fopen(filename, "w");
+	fprintf(fp, "Size\tTime\n");
 	
 	sleep(2);
 	for(i=0; i<a; i++) {
@@ -192,7 +198,7 @@ main(int argc, char **argv)
 #ifdef VIS
 		visualize(sandpile, L);
 #endif
-		fprintf(fp, "%d %d\n",S, t);
+		fprintf(fp, "%d\t%d\n",S, t);
 		S = 0; t = 0;
 		if(i%100 == 0)
 			printf("Run %d executed\n", i);
