@@ -27,7 +27,7 @@ print("c: " + str(k[0]))
 plt.legend(["Measured values of system\n(Length: " + str(s['length'])+")", "Fitted line"])
 
 #Styling
-plt.style.use('fivethirtyeight')
+plt.style.use('bmh')
 plt.ylabel("Number of occurances")
 plt.xlabel("Avalanche Size")
 plt.title("Avalanche sizes in a sandpile\n of different sizes\n Finding the power relation coefficient")
@@ -35,7 +35,7 @@ plt.tight_layout()
 plt.ylim(1e2, 1e5)
 plt.xlim(1e2,1e5)
 
-plt.savefig("../report/figures/sizefit.svg")
+plt.savefig("../report/figures/sizefit.pdf")
 plt.show()
 
 

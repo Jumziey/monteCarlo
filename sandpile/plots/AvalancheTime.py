@@ -38,7 +38,7 @@ for s in systems:
 plt.legend(legends)
 
 #Styling
-plt.style.use('fivethirtyeight')
+plt.style.use('bmh')
 plt.ylabel("Number of occurances")
 plt.xlabel("Avalanche time")
 plt.title("Avalanche times in a sandpile\n of different sizes")
@@ -46,7 +46,7 @@ plt.tight_layout()
 plt.ylim(ymax=3e5)
 plt.xlim(xmin=2e1)
 
-plt.savefig("../report/figures/times.svg")
+plt.savefig("../report/figures/times.pdf")
 plt.show()
 
 

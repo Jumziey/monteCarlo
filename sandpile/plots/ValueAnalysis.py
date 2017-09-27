@@ -38,7 +38,7 @@ for s in systems:
 plt.legend(legends)
 
 #Styling
-plt.style.use('fivethirtyeight')
+plt.style.use('bmh')
 plt.ylabel("Number of occurances")
 plt.xlabel("Avalanche Size")
 plt.title("Avalanche sizes in a sandpile\n of different sizes\n With all values included!")
@@ -46,7 +46,7 @@ plt.ylim(ymax=np.power(10,5))
 #plt.xlim(100,np.power(10,5))
 plt.tight_layout()
 
-plt.savefig("../report/figures/valueanalysis.svg")
+plt.savefig("../report/figures/valueanalysis.pdf")
 plt.show()
 
 
