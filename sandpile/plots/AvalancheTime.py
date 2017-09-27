@@ -8,7 +8,7 @@ import plot
 systems =[
         {
             'length': 32, 
-            'marker': "gs", 
+            'marker': "g*", 
             'cutoff': 6e1,
         },
         {
