@@ -1,5 +1,11 @@
 *.o
 test.c
 *.swp
-
 /src/Cluster/cluster
+/src/Cluster/conf
+/lab2/data
+
+#Sandpile
+sandpile/src/sandpile
+__pycache__
+
